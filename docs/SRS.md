@@ -62,7 +62,7 @@ Functional requirements describe the operations that the system must perform.
 | FR-04 | The system shall allow users to submit IT change requests and enable administrators to review and track these requests. |
 | FR-05 | The system shall assign SLA deadlines to support tickets according to their priority levels. |
 | FR-06 | The system shall display a warning when 75% of the assigned SLA time has elapsed. |
-| FR-07 | The system shall automatically mark tickets as escalated when their SLA deadlines are exceeded. |
+| FR-07 | The system shall automatically escalate overdue tickets hierarchically from Level 1 to Level 2 (Senior Technician) and Level 3 (IT Manager) when SLA resolution thresholds are breached. |
 | FR-08 | The system shall allow employees to submit customer satisfaction ratings after their support requests are resolved. |
 | FR-09 | The system shall calculate and display customer satisfaction results based on submitted feedback. |
 | FR-10 | The system shall provide a KPI dashboard displaying service performance indicators such as ticket numbers, resolution times, SLA compliance, and customer satisfaction scores. |
@@ -96,7 +96,7 @@ The following table connects the system requirements with the relevant standards
 |---|---|---|
 | FR-01, FR-02, FR-03 | IEEE 29148 | Defining and documenting functional system requirements. |
 | FR-04 | ISO 9001:2015 - Clause 8.5.6 | Monitoring and controlling changes. |
-| FR-05, FR-06, FR-07 | ISO 9001:2015 - Clause 8.1 | Operational planning and control of service processes. |
+| FR-05, FR-06, FR-07 | ISO 9001:2015 - Clause 8.2 | Operational planning and control of service processes. |
 | FR-08, FR-09 | ISO 9001:2015 - Clause 9.1.2 | Monitoring customer satisfaction. |
 | FR-10 | ISO 9001:2015 - Clause 9.1 | Monitoring, measurement, analysis, and evaluation. |
 | FR-11, NFR-08 | ISO 9001:2015 - Clause 7.5 | Maintaining documented information. |
