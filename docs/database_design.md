@@ -71,6 +71,8 @@ These tables are connected through primary key (PK) and foreign key (FK) relatio
 | category          | VARCHAR(50)  | NOT NULL                    | IT support category                                          |
 | priority          | VARCHAR(20)  | NOT NULL                    | Priority level (Low, Medium, High, Critical)                 |
 | status            | VARCHAR(30)  | NOT NULL                    | Ticket status (Open, In Progress, Pending, Resolved, Closed) |
+| request_type      | VARCHAR(20)  | NOT NULL                    | Request type (Incident / Change Request)                     |
+| escalation_level  | INT          | DEFAULT 1                   | Current escalation level (1: Support, 2: Level 2 Tech, 3: IT Management) |
 | created_at        | DATETIME     | NOT NULL                    | Ticket creation date                                         |
 | updated_at        | DATETIME     | NULL                        | Last update date                                             |
 | first_response_at | DATETIME     | NULL                        | Date of the first technician response                        |
@@ -81,6 +83,7 @@ These tables are connected through primary key (PK) and foreign key (FK) relatio
 | sla_warning_sent  | BOOLEAN      | DEFAULT FALSE               | Indicates whether the 75% SLA warning has been sent          |
 | is_escalated      | BOOLEAN      | DEFAULT FALSE               | Indicates whether the ticket has been escalated              |
 | escalated_at      | DATETIME     | NULL                        | Date and time of SLA escalation                              |
+
 
 **Related Requirements:** FR-01, FR-02, FR-03, FR-05, FR-06, FR-07, FR-10, FR-11, FR-12, NFR-04, NFR-08.
 
@@ -121,7 +124,7 @@ These tables are connected through primary key (PK) and foreign key (FK) relatio
 
 #### 3.5 Change_Requests
 
-**Purpose:** Stores IT change requests submitted by employees and tracks their review, approval, and implementation processes.
+**Purpose:** Stores detailed assessment, risk evaluation, and CAB approval processes for tickets created with request_type = 'Change Request' or change workflows initiated from existing incidents.
 
 | Column Name  | Data Type    | Constraints                 | Description                                               |
 | ------------ | ------------ | --------------------------- | --------------------------------------------------------- |
