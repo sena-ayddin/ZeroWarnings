@@ -3,12 +3,16 @@
  * SDS-07 - SLA Calculation Service
  * ISO 9001:2015
  *
- * Working hours: Monday-Friday, 09:00-18:00
+ * Working days: Monday-Friday
+ * Working hours: 09:00-18:00
+ * Timezone: Europe/Istanbul (UTC+3)
  * Warning threshold: 75%
  * Escalation threshold: 100%
+ *
+ * No external packages required.
  */
 
-// 1. SLA POLICIES
+// 1. SLA POLICIES (business minutes)
 
 const SLA_POLICIES = {
     Low: 16 * 60,
@@ -22,72 +26,103 @@ const SLA_POLICIES = {
 const BUSINESS_HOURS = {
     start: 9,
     end: 18,
-    workingDays: [1, 2, 3, 4, 5]
+    workingDays: [1, 2, 3, 4, 5],
+    timeZone: "Europe/Istanbul"
 };
 
 const WARNING_THRESHOLD = 75;
+const ESCALATION_THRESHOLD = 100;
+const ISTANBUL_OFFSET_MINUTES = 180;
 
 // 3. DATE VALIDATION
 
 function validateDate(date) {
-    const parsedDate = new Date(date);
+    const parsed = date instanceof Date
+        ? new Date(date.getTime())
+        : new Date(date);
 
-    if (Number.isNaN(parsedDate.getTime())) {
+    if (Number.isNaN(parsed.getTime())) {
         throw new Error("Invalid date provided.");
     }
 
-    return parsedDate;
+    return parsed;
 }
 
-// 4. CHECK WORKING DAY
+// 4. CONVERT TO ISTANBUL WALL-CLOCK TIME
+// Turkey uses UTC+3.
 
-function isWorkingDay(date) {
-    return BUSINESS_HOURS.workingDays.includes(
-        date.getDay()
+function toIstanbulTime(date) {
+    const parsed = validateDate(date);
+
+    return new Date(
+        parsed.getTime() +
+        ISTANBUL_OFFSET_MINUTES * 60000
     );
 }
 
-// 5. MOVE DATE TO BUSINESS HOURS
+function fromIstanbulTime(date) {
+    return new Date(
+        date.getTime() -
+        ISTANBUL_OFFSET_MINUTES * 60000
+    );
+}
+
+// 5. CHECK WORKING DAY
+
+function isWorkingDay(date) {
+    const istanbulDate = toIstanbulTime(date);
+
+    // JavaScript: Sunday = 0, Monday = 1, ..., Saturday = 6
+    const day = istanbulDate.getUTCDay();
+
+    return BUSINESS_HOURS.workingDays.includes(day);
+}
+
+// 6. MOVE DATE TO BUSINESS HOURS
 
 function moveToBusinessHours(date) {
-    const result = new Date(date);
+    let current = toIstanbulTime(date);
 
     while (true) {
+        const day = current.getUTCDay();
 
         // Skip weekends
-        if (!isWorkingDay(result)) {
-            result.setDate(result.getDate() + 1);
-            result.setHours(BUSINESS_HOURS.start, 0, 0, 0);
+        if (!BUSINESS_HOURS.workingDays.includes(day)) {
+            current.setUTCDate(current.getUTCDate() + 1);
+            current.setUTCHours(
+                BUSINESS_HOURS.start, 0, 0, 0
+            );
             continue;
         }
 
-        const hour = result.getHours();
+        const hour = current.getUTCHours();
 
         // Before working hours
         if (hour < BUSINESS_HOURS.start) {
-            result.setHours(BUSINESS_HOURS.start, 0, 0, 0);
+            current.setUTCHours(
+                BUSINESS_HOURS.start, 0, 0, 0
+            );
         }
 
-        // After working hours
+        // At or after closing time
         else if (hour >= BUSINESS_HOURS.end) {
-            result.setDate(result.getDate() + 1);
-            result.setHours(BUSINESS_HOURS.start, 0, 0, 0);
+            current.setUTCDate(current.getUTCDate() + 1);
+            current.setUTCHours(
+                BUSINESS_HOURS.start, 0, 0, 0
+            );
         }
 
         else {
-            break;
+            return current;
         }
     }
-
-    return result;
 }
 
-// 6. CALCULATE BUSINESS MINUTES
+// 7. CALCULATE BUSINESS MINUTES
 
 function calculateBusinessMinutes(startDate, endDate) {
-
-    const start = validateDate(startDate);
-    const end = validateDate(endDate);
+    const start = toIstanbulTime(startDate);
+    const end = toIstanbulTime(endDate);
 
     if (end <= start) {
         return 0;
@@ -96,17 +131,21 @@ function calculateBusinessMinutes(startDate, endDate) {
     let totalMinutes = 0;
 
     const currentDay = new Date(start);
-    currentDay.setHours(0, 0, 0, 0);
+    currentDay.setUTCHours(0, 0, 0, 0);
 
     while (currentDay < end) {
+        const day = currentDay.getUTCDay();
 
-        if (isWorkingDay(currentDay)) {
-
+        if (BUSINESS_HOURS.workingDays.includes(day)) {
             const workStart = new Date(currentDay);
-            workStart.setHours(BUSINESS_HOURS.start, 0, 0, 0);
+            workStart.setUTCHours(
+                BUSINESS_HOURS.start, 0, 0, 0
+            );
 
             const workEnd = new Date(currentDay);
-            workEnd.setHours(BUSINESS_HOURS.end, 0, 0, 0);
+            workEnd.setUTCHours(
+                BUSINESS_HOURS.end, 0, 0, 0
+            );
 
             const intervalStart = Math.max(
                 start.getTime(),
@@ -124,88 +163,97 @@ function calculateBusinessMinutes(startDate, endDate) {
             }
         }
 
-        currentDay.setDate(currentDay.getDate() + 1);
+        currentDay.setUTCDate(
+            currentDay.getUTCDate() + 1
+        );
     }
 
     return totalMinutes;
 }
 
-// 7. ADD BUSINESS MINUTES
+// 8. ADD BUSINESS MINUTES
 
 function addBusinessMinutes(startDate, minutes) {
-
     if (!Number.isFinite(minutes) || minutes < 0) {
-        throw new Error("Minutes must be non-negative.");
+        throw new Error(
+            "Minutes must be a non-negative number."
+        );
     }
 
-    let currentDate = moveToBusinessHours(
-        validateDate(startDate)
-    );
-
+    let current = moveToBusinessHours(startDate);
     let remainingMinutes = minutes;
 
     while (remainingMinutes > 0) {
+        const workEnd = new Date(current);
 
-        const workEnd = new Date(currentDate);
-        workEnd.setHours(BUSINESS_HOURS.end, 0, 0, 0);
+        workEnd.setUTCHours(
+            BUSINESS_HOURS.end, 0, 0, 0
+        );
 
         const availableMinutes =
-            (workEnd.getTime() - currentDate.getTime()) / 60000;
+            (workEnd.getTime() - current.getTime()) / 60000;
 
         if (remainingMinutes <= availableMinutes) {
-
-            currentDate = new Date(
-                currentDate.getTime() +
+            current = new Date(
+                current.getTime() +
                 remainingMinutes * 60000
             );
 
             remainingMinutes = 0;
-
         } else {
-
             remainingMinutes -= availableMinutes;
 
-            currentDate.setDate(
-                currentDate.getDate() + 1
+            current.setUTCDate(
+                current.getUTCDate() + 1
             );
 
-            currentDate.setHours(
+            current.setUTCHours(
                 BUSINESS_HOURS.start, 0, 0, 0
             );
 
-            currentDate = moveToBusinessHours(currentDate);
+            current = moveToBusinessHours(
+                fromIstanbulTime(current)
+            );
         }
     }
 
-    return currentDate;
+    return fromIstanbulTime(current);
 }
 
-// 8. CALCULATE SLA DEADLINE
+// 9. CALCULATE SLA DEADLINE
 
 function calculateSlaDeadline(createdAt, priority) {
-
-    if (!SLA_POLICIES[priority]) {
+    if (!Object.prototype.hasOwnProperty.call(
+        SLA_POLICIES,
+        priority
+    )) {
         throw new Error("Invalid ticket priority.");
     }
 
-    const creationDate = validateDate(createdAt);
-
-    const slaMinutes = SLA_POLICIES[priority];
-
     return addBusinessMinutes(
-        creationDate,
-        slaMinutes
+        createdAt,
+        SLA_POLICIES[priority]
     );
 }
 
-// 9. CALCULATE SLA STATUS
+// 10. CALCULATE SLA STATUS
 
 function getSlaStatus(ticket, now = new Date()) {
-
-    if (!ticket || !ticket.priority || !ticket.createdAt) {
+    if (
+        !ticket ||
+        !ticket.priority ||
+        !ticket.createdAt
+    ) {
         throw new Error(
             "Ticket priority and createdAt are required."
         );
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(
+        SLA_POLICIES,
+        ticket.priority
+    )) {
+        throw new Error("Invalid ticket priority.");
     }
 
     const creationDate = validateDate(ticket.createdAt);
@@ -217,11 +265,17 @@ function getSlaStatus(ticket, now = new Date()) {
         );
     }
 
-    const totalMinutes = SLA_POLICIES[ticket.priority];
+    const calculationEnd = ticket.resolvedAt
+        ? validateDate(ticket.resolvedAt)
+        : currentDate;
 
-    if (!totalMinutes) {
-        throw new Error("Invalid ticket priority.");
+    if (calculationEnd < creationDate) {
+        throw new Error(
+            "Resolution date cannot be before ticket creation."
+        );
     }
+
+    const totalMinutes = SLA_POLICIES[ticket.priority];
 
     const slaDeadline = calculateSlaDeadline(
         creationDate,
@@ -230,7 +284,7 @@ function getSlaStatus(ticket, now = new Date()) {
 
     const elapsedMinutes = calculateBusinessMinutes(
         creationDate,
-        currentDate
+        calculationEnd
     );
 
     const remainingMinutes = Math.max(
@@ -243,27 +297,32 @@ function getSlaStatus(ticket, now = new Date()) {
         (elapsedMinutes / totalMinutes) * 100
     );
 
+    const escalated =
+        elapsedMinutes >= totalMinutes;
+
+    const warning =
+        percentageElapsed >= WARNING_THRESHOLD;
+
     let slaStatus = "ON_TRACK";
-    let warning = false;
-    let escalated = false;
 
-    // 75% warning
-    if (percentageElapsed >= WARNING_THRESHOLD) {
-        slaStatus = "WARNING";
-        warning = true;
-    }
-
-    // 100% escalation
-    if (currentDate >= slaDeadline) {
+    if (escalated) {
         slaStatus = "ESCALATED";
-        escalated = true;
+    } else if (warning) {
+        slaStatus = "WARNING";
     }
 
     return {
+        ticketId: ticket.id ?? null,
+        priority: ticket.priority,
+        timeZone: BUSINESS_HOURS.timeZone,
         slaDeadline,
         totalMinutes,
-        elapsedMinutes,
-        remainingMinutes,
+        elapsedMinutes: Number(
+            elapsedMinutes.toFixed(2)
+        ),
+        remainingMinutes: Number(
+            remainingMinutes.toFixed(2)
+        ),
         percentageElapsed: Number(
             percentageElapsed.toFixed(2)
         ),
@@ -273,11 +332,13 @@ function getSlaStatus(ticket, now = new Date()) {
     };
 }
 
-// 10. EXPORT FUNCTIONS
+// 11. EXPORT FUNCTIONS
 
 module.exports = {
     SLA_POLICIES,
     BUSINESS_HOURS,
+    WARNING_THRESHOLD,
+    ESCALATION_THRESHOLD,
     isWorkingDay,
     calculateBusinessMinutes,
     addBusinessMinutes,
