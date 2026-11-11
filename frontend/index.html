@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IT Service Desk | Home</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f3f6fb;
+      color: #1e293b;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      display: flex;
+      width: 100%;
+    }
+
+    .sidebar {
+      width: 250px;
+      background-color: #0f2147;
+      color: #94a3b8;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      padding: 24px 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 32px;
+      padding-left: 8px;
+    }
+
+    .brand svg {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke: #3b82f6;
+      stroke-width: 2;
+    }
+
+    .sidebar nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .nav-item:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+    }
+
+    .nav-item.active {
+      background-color: #2563eb;
+      color: #ffffff;
+    }
+
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-header {
+      height: 64px;
+      background-color: #f3f6fb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+    }
+
+    .search-box {
+      position: relative;
+      width: 520px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 9px 16px 9px 40px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #ffffff;
+      outline: none;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      stroke: #94a3b8;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .avatar-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+
+    .content {
+      padding: 8px 40px 40px 40px;
+    }
+
+    .page-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 24px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .action-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .action-card:hover {
+      border-color: #2563eb;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .badge-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: #eff6ff;
+      color: #2563eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .card-text {
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .card-button {
+      padding: 10px 16px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+      text-align: center;
+    }
+
+    .action-card:hover .card-button {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+
+    .banner {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .banner-content {
+      font-size: 13px;
+      color: #475569;
+    }
+
+    .banner-tag {
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+      color: #6b21a8;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 12px;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="brand">
+        <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
+        IT Service Desk
+      </div>
+      <nav>
+        <a href="index.html" class="nav-item active">🏠 Home</a>
+        <a href="create-ticket.html" class="nav-item">➕ Create Ticket</a>
+        <a href="dashboard.html" class="nav-item">📋 My Tickets</a>
+        <a href="#" class="nav-item">📊 SLA Monitoring</a>
+        <a href="#" class="nav-item">⏱️ KPI Reports</a>
+        <a href="#" class="nav-item">⭐ Feedback / Survey</a>
+        <a href="#" class="nav-item">❓ Help / FAQ</a>
+      </nav>
+    </aside>
+
+    <div class="main-wrapper">
+      <header class="top-header">
+        <div class="search-box">
+          <svg class="search-icon" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" placeholder="Search...">
+        </div>
+        <div class="user-profile">
+          <div class="avatar-circle">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          </div>
+        </div>
+      </header>
+
+      <main class="content">
+        <h1 class="page-title">Service Desk Portal</h1>
+        <p class="page-subtitle">Select an action to proceed with IT operations and service requests.</p>
+
+        <div class="cards-grid">
+          <a href="create-ticket.html" class="action-card">
+            <div>
+              <div class="card-top">
+                <div class="badge-icon">➕</div>
+                <div class="card-title">Create a Support Ticket</div>
+              </div>
+              <p class="card-text">Submit an incident report or request changes for software, hardware, or access credentials.</p>
+            </div>
+            <div class="card-button">Open Ticket Form</div>
+          </a>
+
+          <a href="dashboard.html" class="action-card">
+            <div>
+              <div class="card-top">
+                <div class="badge-icon">📊</div>
+                <div class="card-title">Technician Dashboard</div>
+              </div>
+              <p class="card-text">Monitor active support queues, SLA countdowns, priority statuses, and escalation paths.</p>
+            </div>
+            <div class="card-button">View Workspace</div>
+          </a>
+        </div>
+
+        <div class="banner">
+          <div class="banner-content">
+            <span class="banner-tag">ISO 9001:2015</span>
+            <span>Documented procedures, SLA conformance tracking, and customer satisfaction measurement active.</span>
+          </div>
+          <span style="font-size: 13px; font-weight: 600; color: #64748b;">SDS-07</span>
+        </div>
+      </main>
+    </div>
+  </div>
+
+</body>
+</html>
