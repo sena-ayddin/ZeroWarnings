@@ -12,14 +12,12 @@
  * No external packages required.
  */
 
-// 1. SLA POLICIES (business minutes)
-
-const SLA_POLICIES = {
-    Low: 16 * 60,
-    Medium: 8 * 60,
-    High: 4 * 60,
-    Critical: 2 * 60
-};
+// 1. SLA POLICIES & THRESHOLDS (Imported from config)
+const {
+    SLA_POLICIES,
+    WARNING_THRESHOLD,
+    ESCALATION_THRESHOLD
+} = require('../config/slaPolicies');
 
 // 2. BUSINESS HOURS
 
@@ -30,8 +28,6 @@ const BUSINESS_HOURS = {
     timeZone: "Europe/Istanbul"
 };
 
-const WARNING_THRESHOLD = 75;
-const ESCALATION_THRESHOLD = 100;
 const ISTANBUL_OFFSET_MINUTES = 180;
 
 // 3. DATE VALIDATION

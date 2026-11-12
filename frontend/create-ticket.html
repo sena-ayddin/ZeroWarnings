@@ -450,7 +450,7 @@
                     </div>
                   </label>
                   <label class="type-box" id="chgBox">
-                    <input type="radio" name="reqType" value="Change" onclick="selectType('Change')">
+                    <input type="radio" name="reqType" value="Change Request" onclick="selectType('Change Request')">
                     <div>
                       <div class="type-box-title">Change Request</div>
                       <div class="type-box-sub">Request a change (e.g., new access, software, hardware).</div>
@@ -463,15 +463,19 @@
                 <div>
                   <label>Category <span class="req">*</span></label>
                   <select class="select-input" id="catSelect">
-                    <option>💻 Hardware</option>
-                    <option>Software</option>
-                    <option>Network</option>
+                    <option value="Hardware">💻 Hardware</option>
+                    <option value="Software">Software</option>
+                    <option value="Network">Network</option>
+                    <option value="Access">Access</option>
+                    <option value="Email">Email</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
                 <div>
                   <label>Priority <span class="req">*</span></label>
                   <select class="select-input" id="prioSelect" onchange="changePriority()">
-                    <option value="High">🚩 High</option>
+                    <option value="Critical">Critical</option>
+                    <option value="High" selected>🚩 High</option>
                     <option value="Medium">Medium</option>
                     <option value="Low">Low</option>
                   </select>
@@ -555,16 +559,18 @@
     }
 
     function changePriority() {
-      var p = document.getElementById('prioSelect').value;
-      var el = document.getElementById('slaHours');
-      if (p === 'High') {
-        el.innerText = '4 hours';
-      } else if (p === 'Medium') {
-        el.innerText = '8 hours';
-      } else {
-        el.innerText = '24 hours';
-      }
-    }
+  var p = document.getElementById('prioSelect').value;
+  var el = document.getElementById('slaHours');
+  if (p === 'Critical') {
+    el.innerText = '2 hours';
+  } else if (p === 'High') {
+    el.innerText = '4 hours';
+  } else if (p === 'Medium') {
+    el.innerText = '8 hours';
+  } else {
+    el.innerText = '16 hours';
+  }
+}
 
     function updateFileName() {
       var fileInput = document.getElementById('fileElem');
@@ -588,8 +594,10 @@
         }
       }
 
-      var randomId = 'INC-' + Math.floor(1000 + Math.random() * 9000);
-      var slaValue = (priority === 'High') ? '03:59:59' : '07:59:59';
+      var prefix = (typeVal === 'Change Request') ? 'CHG-' : 'INC-';
+      var randomId = prefix + Math.floor(1000 + Math.random() * 9000);
+      var slaMap = { Critical: '01:59:59', High: '03:59:59', Medium: '07:59:59', Low: '15:59:59' };
+      var slaValue = slaMap[priority] || '07:59:59';
 
       var newRecord = {
         id: randomId,

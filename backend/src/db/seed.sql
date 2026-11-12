@@ -8,9 +8,9 @@ INSERT INTO Users (full_name, email, password_hash, role, department) VALUES
 
 -- 2. SLA Politikaları (Öncelik ve Dakika Bazlı - SDS-07 standartları)
 INSERT INTO SLA_Policies (policy_name, priority, response_time_minutes, resolution_time_minutes) VALUES 
-('Low Priority Policy', 'Low', 240, 2880),
-('Medium Priority Policy', 'Medium', 120, 1440),
-('High Priority Policy', 'High', 60, 480),
+('Low Priority Policy', 'Low', 240, 960),
+('Medium Priority Policy', 'Medium', 120, 480),
+('High Priority Policy', 'High', 60, 240),
 ('Critical Priority Policy', 'Critical', 15, 120);
 
 -- 3. Örnek Bilet
