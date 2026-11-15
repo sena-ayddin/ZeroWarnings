@@ -34,9 +34,8 @@ app.get('/api/health', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/kpi', kpiRoutes);
-// Gülçin'in modülleri hazır olunca:
-// const feedbackRoutes = require('./routes/feedbackRoutes');  // CSAT -> ticketRoutes içinde bağlanır
-// require('./services/slaWorker').start();                    // otomatik SLA eskalasyon izleyicisi
+// Gülçin'in CSAT ve otomatik SLA izleme modülleri
+require('./services/slaWorker').start();
 
 app.use(notFound);
 app.use(errorHandler);
