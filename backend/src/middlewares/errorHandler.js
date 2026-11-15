@@ -21,6 +21,13 @@ const errorHandler = (err, req, res, next) => {
     status = 400;
     message = 'Geçersiz JSON gövdesi';
   }
+  if (err.code === 'ER_DUP_ENTRY') {
+    status = 409;
+    message = 'Kayıt zaten mevcut';
+  } else if (['ECONNREFUSED', 'PROTOCOL_CONNECTION_LOST', 'ER_ACCESS_DENIED_ERROR', 'ER_BAD_DB_ERROR'].includes(err.code)) {
+    status = 503;
+    message = 'Veritabanına ulaşılamıyor';
+  }
   if (status === 500) console.error(err);
 
   res.status(status).json({
