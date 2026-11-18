@@ -140,9 +140,41 @@ Requirements marked as "Not Covered" need additional test scenarios in a later v
 All test cases are currently marked as "Not Run". Their actual results and final pass/fail statuses will be recorded after execution in the API test environment.
 
 ---
+## 6. Supplementary Backend Smoke Test Execution
 
-## 6. Conclusion
+**Execution Date:** 18 November 2026  
+**Test Environment:** Express.js REST API and MySQL  
+**Execution Command:** `npm.cmd --prefix .\backend run test:smoke`  
+**Test Script:** `backend/scripts/smoke-test.js`
+
+The supplementary backend smoke test was executed successfully.
+
+**Execution Summary:**
+- Total checks: 26
+- Passed: 26
+- Failed: 0
+
+**Verified areas:**
+- Employee, Technician, and Administrator login
+- Invalid password and unauthorized access
+- Ticket creation and validation
+- Employee and Technician ticket access
+- Ticket details and ownership restrictions
+- Role-based ticket status updates
+- Ticket assignment and response timestamps
+- Ticket resolution and closure
+- KPI report access and role restrictions
+
+**Result:** All 26 supplementary smoke test checks passed.
+
+**Note:** These smoke tests provide additional implementation-level verification evidence. They do not replace the individual execution of TC-01 to TC-10. The planned test cases remain marked as "Not Run" until their specific verification procedures are completed.
+
+---
+
+## 7. Conclusion
 
 This updated Requirements Traceability Matrix links the prepared IEEE 1012 test cases to the functional and non-functional requirements defined in the SDS-07 SRS document.
 
-It provides a basis for tracking test coverage and identifying requirements that need additional verification. The matrix will be updated as implementation and test execution progress.
+The supplementary backend smoke test was executed successfully, with 26 passed checks and no failures. Individual test case execution and remaining requirement verification will continue to be tracked separately.
+
+
