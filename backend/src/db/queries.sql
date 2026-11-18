@@ -1,3 +1,7 @@
+-- NOT: Bu sorgular referans amaçlıdır. 
+-- İş mantığı ve mesai saati (09:00 - 18:00) filtreleri nedeniyle 
+-- Backend API sonuçlarıyla aralarında küçük farklar bulunabilir.
+
 USE helpdesk_db;
 
 -- 1. CSAT Average
