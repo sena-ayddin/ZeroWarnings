@@ -64,8 +64,7 @@ Korumalı uçlar için başlık: `Authorization: Bearer <token>`
 ```bash
 npm install
 npm run seed:passwords
-
-
+```
 
 ## Hata biçimi
 ```json
