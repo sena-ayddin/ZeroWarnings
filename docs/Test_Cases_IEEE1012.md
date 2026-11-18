@@ -245,8 +245,8 @@ Each test case includes its objective, related requirement, preconditions, test 
 - The Employee should be able to access permitted functions.
 - Access to administrator-only functions should be denied.
 
-**Actual Result:** Not Run  
-**Status:** Not Run
+**Actual Result:** Employee ticket listing returned 200. Employee status update and KPI access returned 403 as expected.
+**Status:** PASS
 
 ---
 
@@ -276,8 +276,8 @@ Each test case includes its objective, related requirement, preconditions, test 
 - The Technician should be able to view assigned tickets.
 - The Technician should be able to update ticket status according to the permitted operations.
 
-**Actual Result:** Not Run  
-**Status:** Not Run
+**Actual Result:** Technician ticket listing and status update succeeded. Ticket assignment matched the technician ID, and first_response_at was populated.
+**Status:** PASS
 
 ---
 
@@ -304,9 +304,8 @@ Each test case includes its objective, related requirement, preconditions, test 
 - The Administrator should be able to access the functions permitted for the Administrator role.
 - The system should display the available service monitoring information.
 
-**Actual Result:** Not Run  
-**Status:** Not Run
-
+**Actual Result:** Administrator accessed the KPI endpoint successfully (200), and KPI information was returned.
+**Status:** PASS
 ---
 
 ### TC-10 – Audit Log Recording
@@ -368,23 +367,51 @@ The test cases will be executed in the API test environment. Actual results and 
 
 **Test Environment:**
 - Backend: Express.js REST API
-- Database: MySQL (helpdesk_db)
+- Database: MySQL (`helpdesk_db`)
 - Test Script: `backend/scripts/smoke-test.js`
-- Execution Command: `npm.cmd run test:smoke`
+- Execution Command: `npm.cmd --prefix .\backend run test:smoke`
 
-**Test Results:**
+### Test Results
 
-| Test Description | Expected Result | Actual Result | Status |
-|---|---|---|---|
-| Employee Login | 200 | 200 | PASS |
-| Technician Login | 200 | 200 | PASS |
-| Administrator Login | 200 | 200 | PASS |
-| Wrong Password | 401 | 401 | PASS |
-| Ticket Listing Without Token | 401 | 401 | PASS |
-| Invalid Ticket Data | 400 | 400 | PASS |
-| Ticket Creation | 201 | 201 | PASS |
+| No. | Test Description | Expected | Actual | Status |
+|---|---|---:|---:|---|
+| 1 | Employee Login | 200 | 200 | PASS |
+| 2 | Technician Login | 200 | 200 | PASS |
+| 3 | Administrator Login | 200 | 200 | PASS |
+| 4 | Wrong Password | 401 | 401 | PASS |
+| 5 | Ticket Listing Without Token | 401 | 401 | PASS |
+| 6 | Invalid Ticket Data | 400 | 400 | PASS |
+| 7 | Ticket Creation | 201 | 201 | PASS |
+| 8 | Employee Lists Own Tickets | 200 | 200 | PASS |
+| 9 | Technician Lists Tickets | At least 1 ticket | True | PASS |
+| 10 | Ticket Details | 200 | 200 | PASS |
+| 11 | Non-existent Ticket | 404 | 404 | PASS |
+| 12 | Other Employee Cannot View Ticket | 403 | 403 | PASS |
+| 13 | Employee Cannot Update Ticket Status | 403 | 403 | PASS |
+| 14 | Invalid Ticket Status | 400 | 400 | PASS |
+| 15 | Empty Status Update Body | 400 | 400 | PASS |
+| 16 | Technician Updates Ticket Status | 200 | 200 | PASS |
+| 17 | Ticket Assigned to Technician | Technician ID 2 | Technician ID 2 | PASS |
+| 18 | First Response Timestamp | Not Null | True | PASS |
+| 19 | Ticket Resolved | 200 | 200 | PASS |
+| 20 | Resolution Timestamp | Not Null | True | PASS |
+| 21 | Ticket Closed | 200 | 200 | PASS |
+| 22 | Closed Ticket Cannot Be Updated | 409 | 409 | PASS |
+| 23 | Administrator Accesses KPI Report | 200 | 200 | PASS |
+| 24 | Resolved Ticket Count | At Least 1 | 2 | PASS |
+| 25 | Employee Cannot Access KPI | 403 | 403 | PASS |
+| 26 | Technician Cannot Access KPI | 403 | 403 | PASS |
 
-**Execution Summary:**
-All 7 smoke tests were completed successfully. The backend authentication, authorization and basic ticket operations responded with the expected HTTP status codes.
+### Execution Summary
 
-**Note:** These smoke test results are supplementary backend checks. They do not replace the individual execution of TC-01 to TC-10.
+- Total checks: 26
+- Passed: 26
+- Failed: 0
+
+All 26 supplementary backend smoke test checks passed.
+
+**Note:** These results provide supplementary backend verification evidence. They do not replace the individual execution of TC-01 to TC-10. TC-01 to TC-06 and TC-10 remain subject to their specific verification procedures.
+
+## 7. Conclusion
+
+The IEEE 1012 test document records the planned verification scenarios and the results of the supplementary backend smoke tests. The smoke test execution confirmed successful authentication, role-based access control, ticket operations, status management and KPI access. Remaining test cases will be updated when their specific verification procedures are completed.

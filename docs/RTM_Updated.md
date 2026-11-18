@@ -26,7 +26,7 @@ The test cases are currently prepared but have not yet been executed. Therefore,
 |---|---|---|---|---|
 | FR-01 | Employees can create IT support tickets. | TC-01 | Ticket creation and SLA assignment check | Not Run |
 | FR-02 | Employees can view submitted tickets and their current status. | Not Covered | No dedicated test case prepared yet. | Not Tested |
-| FR-03 | Technicians can view assigned tickets and update their status. | TC-08 | Technician authorization and ticket status update check | Not Run |
+| FR-03 | Technicians can view assigned tickets and update their status. | TC-08 | Technician authorization and ticket status update check | PASS |
 | FR-04 | Users can submit IT change requests for administrative review. | Not Covered | No dedicated test case prepared yet. | Not Tested |
 | FR-05 | The system assigns SLA deadlines according to ticket priority. | TC-01, TC-02, TC-03, TC-04 | SLA deadline and business-hour calculation checks | Not Run |
 | FR-06 | The system displays a warning when the defined SLA threshold is reached. | TC-05 | SLA warning threshold check | Not Run |
@@ -35,10 +35,10 @@ The test cases are currently prepared but have not yet been executed. Therefore,
 | FR-09 | The system calculates and displays customer satisfaction (CSAT). | Not Covered | No dedicated test case prepared yet. | Not Tested |
 | FR-10 | The system provides KPI reports and service performance information. | Not Covered | No dedicated test case prepared yet. | Not Tested |
 | FR-11 | Important user activities and ticket status changes are recorded in the audit log. | TC-10 | Audit log record verification | Not Run |
-| FR-12 | Administrators can monitor ticket management and service performance. | TC-09 | Administrator access and monitoring check | Not Run |
+| FR-12 | Administrators can monitor ticket management and service performance. | TC-09 | Administrator access and monitoring check | PASS |
 | NFR-01 | The system provides a simple and understandable user interface. | Not Covered | No dedicated usability test case prepared yet. | Not Tested |
 | NFR-02 | Normal operations should respond within 3 seconds under expected usage. | Not Covered | No dedicated performance test case prepared yet. | Not Tested |
-| NFR-03 | Access to system functions is restricted according to user roles. | TC-07, TC-08, TC-09 | Role-based access control verification | Not Run |
+| NFR-03 | Access to system functions is restricted according to user roles. | TC-07, TC-08, TC-09 | Role-based access control verification | PASS |
 | NFR-04 | Ticket and change request records should be accurate and reliable. | Not Covered | No dedicated reliability test case prepared yet. | Not Tested |
 | NFR-05 | The system should have a modular and maintainable structure. | Not Covered | No dedicated maintainability test case prepared yet. | Not Tested |
 | NFR-06 | The system should be compatible with modern web browsers. | Not Covered | No dedicated browser compatibility test case prepared yet. | Not Tested |
