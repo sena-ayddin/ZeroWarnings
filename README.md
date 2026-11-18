@@ -59,6 +59,14 @@ Korumalı uçlar için başlık: `Authorization: Bearer <token>`
 ```
 `category`: Hardware, Software, Network, Access, Email, Other · `priority`: Low, Medium, High, Critical · `request_type`: Incident, Change Request
 
+## Test Kullanıcıları ve Şifreler
+`seed.sql` dosyasındaki şifre hash'leri örnek veridir. Sisteme sorunsuz giriş yapabilmek için veritabanını kurduktan sonra `backend` klasöründe şu komutları çalıştırmalısınız:
+```bash
+npm install
+npm run seed:passwords
+
+
+
 ## Hata biçimi
 ```json
 { "success": false, "error": { "status": 403, "message": "...", "details": [] } }
