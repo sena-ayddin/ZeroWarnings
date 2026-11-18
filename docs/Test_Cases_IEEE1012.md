@@ -360,3 +360,31 @@ Each test case includes its objective, related requirement, preconditions, test 
 The test cases in this document define the planned verification and validation activities for the SDS-07 system. They cover SLA calculations, business-hour rules, warning and escalation behavior, role-based access control, ticket management and audit logging.
 
 The test cases will be executed in the API test environment. Actual results and pass/fail statuses will be added after test execution.
+---
+
+## 6. Supplementary Backend Smoke Test Execution
+
+**Execution Date:** 18 November 2026
+
+**Test Environment:**
+- Backend: Express.js REST API
+- Database: MySQL (helpdesk_db)
+- Test Script: `backend/scripts/smoke-test.js`
+- Execution Command: `npm.cmd run test:smoke`
+
+**Test Results:**
+
+| Test Description | Expected Result | Actual Result | Status |
+|---|---|---|---|
+| Employee Login | 200 | 200 | PASS |
+| Technician Login | 200 | 200 | PASS |
+| Administrator Login | 200 | 200 | PASS |
+| Wrong Password | 401 | 401 | PASS |
+| Ticket Listing Without Token | 401 | 401 | PASS |
+| Invalid Ticket Data | 400 | 400 | PASS |
+| Ticket Creation | 201 | 201 | PASS |
+
+**Execution Summary:**
+All 7 smoke tests were completed successfully. The backend authentication, authorization and basic ticket operations responded with the expected HTTP status codes.
+
+**Note:** These smoke test results are supplementary backend checks. They do not replace the individual execution of TC-01 to TC-10.
