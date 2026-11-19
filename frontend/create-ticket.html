@@ -407,7 +407,7 @@
         <a href="dashboard.html" class="nav-item">📋 My Tickets</a>
         <a href="#" class="nav-item">📊 SLA Monitoring</a>
         <a href="#" class="nav-item">⏱️ KPI Reports</a>
-        <a href="#" class="nav-item">⭐ Feedback / Survey</a>
+        <a href="feedback.html" class="nav-item">⭐ Feedback / Survey</a>
         <a href="#" class="nav-item">❓ Help / FAQ</a>
       </nav>
     </aside>
@@ -450,7 +450,7 @@
                     </div>
                   </label>
                   <label class="type-box" id="chgBox">
-                    <input type="radio" name="reqType" value="Change Request" onclick="selectType('Change Request')">
+                    <input type="radio" name="reqType" value="Change" onclick="selectType('Change')">
                     <div>
                       <div class="type-box-title">Change Request</div>
                       <div class="type-box-sub">Request a change (e.g., new access, software, hardware).</div>
@@ -466,16 +466,12 @@
                     <option value="Hardware">💻 Hardware</option>
                     <option value="Software">Software</option>
                     <option value="Network">Network</option>
-                    <option value="Access">Access</option>
-                    <option value="Email">Email</option>
-                    <option value="Other">Other</option>
                   </select>
                 </div>
                 <div>
                   <label>Priority <span class="req">*</span></label>
                   <select class="select-input" id="prioSelect" onchange="changePriority()">
-                    <option value="Critical">Critical</option>
-                    <option value="High" selected>🚩 High</option>
+                    <option value="High">🚩 High</option>
                     <option value="Medium">Medium</option>
                     <option value="Low">Low</option>
                   </select>
@@ -547,6 +543,7 @@
     </div>
   </div>
 
+  <script src="js/api.js"></script>
   <script>
     function selectType(val) {
       if (val === 'Incident') {
@@ -559,18 +556,16 @@
     }
 
     function changePriority() {
-  var p = document.getElementById('prioSelect').value;
-  var el = document.getElementById('slaHours');
-  if (p === 'Critical') {
-    el.innerText = '2 hours';
-  } else if (p === 'High') {
-    el.innerText = '4 hours';
-  } else if (p === 'Medium') {
-    el.innerText = '8 hours';
-  } else {
-    el.innerText = '16 hours';
-  }
-}
+      var p = document.getElementById('prioSelect').value;
+      var el = document.getElementById('slaHours');
+      if (p === 'High') {
+        el.innerText = '4 hours';
+      } else if (p === 'Medium') {
+        el.innerText = '8 hours';
+      } else {
+        el.innerText = '24 hours';
+      }
+    }
 
     function updateFileName() {
       var fileInput = document.getElementById('fileElem');
@@ -582,11 +577,14 @@
       }
     }
 
-    function submitTicket() {
+    async function submitTicket() {
       var subject = document.getElementById('subjInput').value;
+      var description = document.getElementById('descInput').value;
+      var category = document.getElementById('catSelect').value;
       var priority = document.getElementById('prioSelect').value;
       var radios = document.getElementsByName('reqType');
       var typeVal = 'Incident';
+
       for (var i = 0; i < radios.length; i++) {
         if (radios[i].checked) {
           typeVal = radios[i].value;
@@ -594,30 +592,21 @@
         }
       }
 
-      var prefix = (typeVal === 'Change Request') ? 'CHG-' : 'INC-';
-      var randomId = prefix + Math.floor(1000 + Math.random() * 9000);
-      var slaMap = { Critical: '01:59:59', High: '03:59:59', Medium: '07:59:59', Low: '15:59:59' };
-      var slaValue = slaMap[priority] || '07:59:59';
-
-      var newRecord = {
-        id: randomId,
-        subject: subject,
+      var payload = {
+        title: subject,
+        description: description,
+        category: category,
         type: typeVal,
-        priority: priority,
-        sla: slaValue,
-        status: 'In progress'
+        priority: priority
       };
 
-      var existing = [];
       try {
-        existing = JSON.parse(localStorage.getItem('tickets')) || [];
-      } catch (err) {
-        existing = [];
+        await createTicketAPI(payload);
+        alert("Support ticket has been successfully submitted to the server!");
+        window.location.href = 'dashboard.html';
+      } catch (error) {
+        alert("Waiting for backend connection (API Endpoint: POST /api/tickets).");
       }
-      existing.unshift(newRecord);
-      localStorage.setItem('tickets', JSON.stringify(existing));
-
-      window.location.href = 'index.html';
     }
   </script>
 </body>

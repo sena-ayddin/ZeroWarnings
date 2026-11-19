@@ -285,7 +285,7 @@
         <a href="dashboard.html" class="nav-item active">📋 My Tickets</a>
         <a href="#" class="nav-item">📊 SLA Monitoring</a>
         <a href="#" class="nav-item">⏱️ KPI Reports</a>
-        <a href="#" class="nav-item">⭐ Feedback / Survey</a>
+        <a href="feedback.html" class="nav-item">⭐ Feedback / Survey</a>
         <a href="#" class="nav-item">❓ Help / FAQ</a>
       </nav>
     </aside>
@@ -423,6 +423,7 @@
     </div>
   </div>
 
+  <script src="js/api.js"></script>
   <script>
     var totalSeconds = 42 * 60 + 18;
 
@@ -433,36 +434,40 @@
         var m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
         var s = String(totalSeconds % 60).padStart(2, '0');
         var text = h + ':' + m + ':' + s;
-        document.getElementById('alertTimer').innerText = text;
-        document.getElementById('tableTimer').innerText = text;
+        if (document.getElementById('alertTimer')) document.getElementById('alertTimer').innerText = text;
+        if (document.getElementById('tableTimer')) document.getElementById('tableTimer').innerText = text;
       }
     }
     setInterval(runCountdown, 1000);
 
-    var localData = [];
-    try {
-      localData = JSON.parse(localStorage.getItem('tickets')) || [];
-    } catch(e) {
-      localData = [];
-    }
+    async function loadDashboardTickets() {
+      try {
+        const tickets = await getTicketsAPI();
+        const tbody = document.getElementById('ticketListBody');
+        const counter = document.getElementById('totalTicketsCount');
 
-    if (localData.length > 0) {
-      var tbody = document.getElementById('ticketListBody');
-      var counter = document.getElementById('totalTicketsCount');
-      counter.innerText = 38 + localData.length;
+        if (tickets && tickets.length > 0) {
+          counter.innerText = tickets.length;
+          tbody.innerHTML = '';
 
-      for (var i = 0; i < localData.length; i++) {
-        var item = localData[i];
-        var row = document.createElement('tr');
-        row.innerHTML = '<td><strong>' + item.id + '</strong></td>' +
-                        '<td>' + item.subject + '</td>' +
-                        '<td>' + item.type + '</td>' +
-                        '<td>' + item.priority + '</td>' +
-                        '<td>' + item.sla + '</td>' +
-                        '<td>' + item.status + '</td>';
-        tbody.insertBefore(row, tbody.firstChild);
+          tickets.forEach(item => {
+            const row = document.createElement('tr');
+            const statusClass = (item.status === 'At risk' || item.status === 'Breached') ? 'badge-risk' : '';
+            row.innerHTML = '<td><strong>' + (item.ticket_code || item.id) + '</strong></td>' +
+                            '<td>' + (item.title || item.subject) + '</td>' +
+                            '<td>' + (item.type || 'Incident') + '</td>' +
+                            '<td>' + item.priority + '</td>' +
+                            '<td class="' + statusClass + '">' + (item.sla_remaining || '03:59:00') + '</td>' +
+                            '<td class="' + statusClass + '">' + (item.status || 'Open') + '</td>';
+            tbody.appendChild(row);
+          });
+        }
+      } catch (error) {
+        console.log("Waiting for API connection: GET /api/tickets");
       }
     }
+
+    window.addEventListener('DOMContentLoaded', loadDashboardTickets);
   </script>
 </body>
 </html>
