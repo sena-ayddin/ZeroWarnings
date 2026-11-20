@@ -1,5 +1,5 @@
 
-# Requirements Traceability Matrix (RTM) – Updated
+# Requirements Traceability Matrix (RTM) â€“ Updated
 
 **Project Name:** ISO 9001 Compliant IT Service Desk and Process Tracking System  
 **Project Code:** SDS-07  
@@ -31,9 +31,9 @@ The test execution results are recorded in this matrix. Completed, partially ver
 | FR-05 | The system assigns SLA deadlines according to ticket priority. | TC-01, TC-02, TC-03, TC-04 | SLA deadline and business-hour calculation checks | PARTIAL |
 | FR-06 | The system displays a warning when the defined SLA threshold is reached. | TC-05 | SLA warning threshold check | PASS |
 | FR-07 | The system escalates overdue tickets. | TC-06 | SLA deadline violation and escalation status check | PASS |
-| FR-08 | Employees can submit satisfaction ratings after ticket resolution. | Not Covered | No dedicated test case prepared yet. | Not Tested |
-| FR-09 | The system calculates and displays customer satisfaction (CSAT). | Not Covered | No dedicated test case prepared yet. | Not Tested |
-| FR-10 | The system provides KPI reports and service performance information. | Not Covered | No dedicated test case prepared yet. | Not Tested |
+| FR-08 | Employees can submit satisfaction ratings after ticket resolution. | TC-11, TC-12 | Valid feedback submission and invalid rating validation | PASS |
+| FR-09 | The system calculates and displays customer satisfaction (CSAT). | TC-13 | Average CSAT calculation verified at model level; API display not available | PARTIAL |
+| FR-10 | The system provides KPI reports and service performance information. | TC-14 | Administrator KPI API verification | PASS |
 | FR-11 | Important user activities and ticket status changes are recorded in the audit log. | TC-10 | Audit log record verification | PASS |
 | FR-12 | Administrators can monitor ticket management and service performance. | TC-09 | Administrator access and monitoring check | PASS |
 | NFR-01 | The system provides a simple and understandable user interface. | Not Covered | No dedicated usability test case prepared yet. | Not Tested |
@@ -197,5 +197,3 @@ The worker recorded 225% elapsed SLA time for the test ticket. Both warning and 
 This updated Requirements Traceability Matrix links the prepared IEEE 1012 test cases to the functional and non-functional requirements defined in the SDS-07 SRS document.
 
 The supplementary backend smoke test was executed successfully, with 26 passed checks and no failures. The completed test results are recorded in the traceability matrix. TC-03 and partially verified areas remain clearly identified.
-
-
