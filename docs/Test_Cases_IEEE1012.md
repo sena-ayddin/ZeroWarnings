@@ -29,8 +29,8 @@ Each test case includes its objective, related requirement, preconditions, test 
 - API endpoints: `/api/tickets` and related endpoints
 - User roles: Employee, Technician, Administrator
 - SLA business hours: 09:00–18:00
-- Testing tool planned: Postman
-- Test execution status: Not Run
+- Testing tools used: PowerShell, Node.js scripts and direct MySQL queries
+- Test execution status: Partially executed; see individual test results
 
 ---
 
@@ -66,8 +66,8 @@ Each test case includes its objective, related requirement, preconditions, test 
 - The system should assign an SLA resolution deadline.
 - The `resolution_due_at` value should match the configured SLA policy and business-hour rules.
 
-**Actual Result:** Not Run  
-**Status:** Not Run
+**Actual Result:** The SLA service deadline calculation was executed for Medium priority. Ticket creation also succeeded in the backend smoke test. The resolution_due_at field was not independently compared with the expected deadline.
+**Status:** PARTIAL
 
 ---
 
@@ -96,8 +96,8 @@ Each test case includes its objective, related requirement, preconditions, test 
 - Each ticket should receive an SLA deadline according to its selected priority.
 - The assigned deadlines should match the configured SLA policy values.
 
-**Actual Result:** Not Run  
-**Status:** Not Run
+**Actual Result:** The SLA service returned the configured durations for all priorities: Low 960, Medium 480, High 240 and Critical 120 business minutes. Calculated deadlines were checked.
+**Status:** PASS
 
 ---
 
@@ -158,8 +158,8 @@ Each test case includes its objective, related requirement, preconditions, test 
 - The SLA countdown should continue during business hours.
 - The remaining SLA time should decrease according to the elapsed business time.
 
-**Actual Result:** Not Run  
-**Status:** Not Run
+**Actual Result:** The business-time calculation returned 540 minutes for a 09:00?18:00 working period. A live countdown decrease over a waiting period was not separately observed.
+**Status:** PARTIAL
 
 ---
 
@@ -187,8 +187,8 @@ Each test case includes its objective, related requirement, preconditions, test 
 - The system should display the configured warning indicator when the 75% threshold is reached.
 - The ticket should show the appropriate warning status, such as `WARNING`.
 
-**Actual Result:** Not Run  
-**Status:** Not Run
+**Actual Result:** The SLA status calculation returned WARNING at exactly 75% elapsed time. The real SLA worker also set the warning flag and created an SLA_WARNING_75_PERCENT audit record.
+**Status:** PASS
 
 ---
 
@@ -215,8 +215,8 @@ Each test case includes its objective, related requirement, preconditions, test 
 - The system should identify the SLA deadline violation.
 - The ticket should receive the `ESCALATED` status or flag.
 
-**Actual Result:** Not Run  
-**Status:** Not Run
+**Actual Result:** The real SLA worker processed test ticket INC-1028. It set is_escalated to 1 and escalation_level to 3 at 225% elapsed time, and created an SLA_ESCALATED_LEVEL_3 audit record.
+**Status:** PASS
 
 ---
 
@@ -332,8 +332,8 @@ Each test case includes its objective, related requirement, preconditions, test 
 - The system should create an audit log record for the performed activity.
 - The record should contain the available information needed to identify the activity, such as the user, action and timestamp.
 
-**Actual Result:** Not Run  
-**Status:** Not Run
+**Actual Result:** Audit records were verified for ticket creation, assignment, status changes, SLA warning and SLA escalation. The records included the corresponding actions and ticket information.
+**Status:** PASS
 
 ---
 
@@ -341,24 +341,24 @@ Each test case includes its objective, related requirement, preconditions, test 
 
 | Test ID | Test Description | Execution Status |
 |---|---|---|
-| TC-01 | SLA resolution deadline calculation | Not Run |
-| TC-02 | SLA duration according to priority | Not Run |
+| TC-01 | SLA resolution deadline calculation | PARTIAL |
+| TC-02 | SLA duration according to priority | PASS |
 | TC-03 | SLA countdown during non-business hours | Not Run |
-| TC-04 | SLA countdown during business hours | Not Run |
-| TC-05 | SLA warning at the defined threshold | Not Run |
-| TC-06 | SLA escalation after deadline | Not Run |
-| TC-07 | Employee role authorization | Not Run |
-| TC-08 | Technician ticket management authorization | Not Run |
-| TC-09 | Administrator access and monitoring | Not Run |
-| TC-10 | Audit log recording | Not Run |
+| TC-04 | SLA countdown during business hours | PARTIAL |
+| TC-05 | SLA warning at the defined threshold | PASS |
+| TC-06 | SLA escalation after deadline | PASS |
+| TC-07 | Employee role authorization | PASS |
+| TC-08 | Technician ticket management authorization | PASS |
+| TC-09 | Administrator access and monitoring | PASS |
+| TC-10 | Audit log recording | PASS |
 
 ---
 
 ## 5. Conclusion
 
-The test cases in this document define the planned verification and validation activities for the SDS-07 system. They cover SLA calculations, business-hour rules, warning and escalation behavior, role-based access control, ticket management and audit logging.
+The test cases in this document record verification and validation activities for the SDS-07 system, covering SLA calculations, business-hour rules, warning and escalation behavior, role-based access control, ticket management and audit logging.
 
-The test cases will be executed in the API test environment. Actual results and pass/fail statuses will be added after test execution.
+Test execution results have been recorded for the completed verification activities. TC-03 remains not run, while TC-01 and TC-04 are partially verified.
 ---
 
 ## 6. Supplementary Backend Smoke Test Execution
@@ -410,8 +410,30 @@ The test cases will be executed in the API test environment. Actual results and 
 
 All 26 supplementary backend smoke test checks passed.
 
-**Note:** These results provide supplementary backend verification evidence. They do not replace the individual execution of TC-01 to TC-10. TC-01 to TC-06 and TC-10 remain subject to their specific verification procedures.
+## 6.1 Supplementary SLA Worker Verification
+
+**Execution Date:** 21 November 2026
+
+**Test Ticket:** INC-1028 (ticket_id: 5)  
+**Priority:** High
+
+The test ticket creation time was adjusted to a business-hour timestamp in the test database. The SLA worker's checkOpenTickets() function was then executed.
+
+| Check | Expected / Observed Result | Status |
+|---|---|---|
+| SLA warning flag | sla_warning_sent = 1 | PASS |
+| Escalation flag | is_escalated = 1 | PASS |
+| Escalation level | escalation_level = 3 | PASS |
+| Warning audit record | SLA_WARNING_75_PERCENT | PASS |
+| Escalation audit record | SLA_ESCALATED_LEVEL_3 | PASS |
+
+The worker calculated 225% elapsed SLA time for the test ticket. It recorded both the warning and escalation actions in Audit_Logs.
+
+**Result:** The SLA warning and escalation worker behavior was successfully verified using a test ticket.
+
+
+**Note:** These results provide supplementary backend verification evidence and do not replace individual test cases. TC-03 remains not run; TC-01 and TC-04 are partially verified.
 
 ## 7. Conclusion
 
-The IEEE 1012 test document records the planned verification scenarios and the results of the supplementary backend smoke tests. The smoke test execution confirmed successful authentication, role-based access control, ticket operations, status management and KPI access. Remaining test cases will be updated when their specific verification procedures are completed.
+The IEEE 1012 test document records the executed verification scenarios and supplementary backend smoke test results. The completed tests verified SLA priority calculations, warning and escalation behavior, role-based access control, ticket operations and audit logging. TC-03 remains not run, while TC-01 and TC-04 are partially verified.
