@@ -188,7 +188,7 @@ The worker recorded 225% elapsed SLA time for the test ticket. Both warning and 
 
 **Result:** All 26 supplementary smoke test checks passed.
 
-**Note:** These smoke tests provide additional implementation-level verification evidence. They do not replace the individual execution of TC-01 to TC-10. Individual test case results are tracked in the mapping above. TC-03 remains not run; TC-01 and TC-04 are partially verified.
+**Note:** These smoke tests provide additional implementation-level verification evidence. They do not replace the individual execution of TC-01 to TC-10. Individual test case results are tracked in the mapping above. TC-01, TC-03, and TC-04 remain partially verified.
 
 ---
 

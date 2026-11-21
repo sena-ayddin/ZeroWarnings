@@ -436,11 +436,11 @@ The worker calculated 225% elapsed SLA time for the test ticket. It recorded bot
 **Result:** The SLA warning and escalation worker behavior was successfully verified using a test ticket.
 
 
-**Note:** These results provide supplementary backend verification evidence and do not replace individual test cases. TC-03 remains not run; TC-01 and TC-04 are partially verified.
+**Note:** These results provide supplementary backend verification evidence and do not replace individual test cases. TC-01, TC-03, and TC-04 remain partially verified.
 
 ## 7. Conclusion
 
-The IEEE 1012 test document records the executed verification scenarios and supplementary backend smoke test results. The completed tests verified SLA priority calculations, warning and escalation behavior, role-based access control, ticket operations and audit logging. TC-03 is partially verified, while TC-01 and TC-04 remain partially verified.
+The IEEE 1012 test activities for WP-08 have been completed and documented. TC-11 to TC-15 passed. TC-01, TC-03, and TC-04 remain partially verified due to the limitations described in their test results. The supplementary backend smoke tests passed all 26 checks. The SLA warning and escalation verification also passed.
 
 
 ## 6.2 CSAT and KPI Test Execution
