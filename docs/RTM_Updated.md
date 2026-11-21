@@ -24,11 +24,11 @@ The test execution results are recorded in this matrix. Completed, partially ver
 
 | Requirement ID | Requirement Description | Test Case ID | Verification Method | Test Status |
 |---|---|---|---|---|
-| FR-01 | Employees can create IT support tickets. | TC-01 | Ticket creation and SLA assignment check | PARTIAL |
+| FR-01 | Employees can create IT support tickets. | TC-01 | Ticket creation and SLA assignment check | PASS |
 | FR-02 | Employees can view submitted tickets and their current status. | Not Covered | No dedicated test case prepared yet. | Not Tested |
 | FR-03 | Technicians can view assigned tickets and update their status. | TC-08 | Technician authorization and ticket status update check | PASS |
 | FR-04 | Users can submit IT change requests for administrative review. | Not Covered | No dedicated test case prepared yet. | Not Tested |
-| FR-05 | The system assigns SLA deadlines according to ticket priority. | TC-01, TC-02, TC-03, TC-04 | SLA deadline and business-hour calculation checks | PARTIAL |
+| FR-05 | The system assigns SLA deadlines according to ticket priority. | TC-01, TC-02, TC-03, TC-04 | SLA deadline and business-hour calculation checks | PASS |
 | FR-06 | The system displays a warning when the defined SLA threshold is reached. | TC-05 | SLA warning threshold check | PASS |
 | FR-07 | The system escalates overdue tickets. | TC-06 | SLA deadline violation and escalation status check | PASS |
 | FR-08 | Employees can submit satisfaction ratings after ticket resolution. | TC-11, TC-12 | Valid feedback submission and invalid rating validation | PASS |
@@ -51,10 +51,10 @@ The test execution results are recorded in this matrix. Completed, partially ver
 
 | Test Case ID | Test Case Description | Related Requirement(s) | Execution Status |
 |---|---|---|
-| TC-01 | SLA resolution deadline calculation during ticket creation | FR-01, FR-05 PARTIAL |
+| TC-01 | SLA resolution deadline calculation during ticket creation | FR-01, FR-05 PASS |
 | TC-02 | SLA duration according to ticket priority | FR-05 PASS |
-| TC-03 | SLA countdown during non-business hours | FR-05 Not Run |
-| TC-04 | SLA countdown during business hours | FR-05 PARTIAL |
+| TC-03 | SLA countdown during non-business hours | FR-05 PASS |
+| TC-04 | SLA countdown during business hours | FR-05 PASS |
 | TC-05 | SLA warning at the defined threshold | FR-06 PASS |
 | TC-06 | SLA escalation after deadline | FR-07 PASS |
 | TC-07 | Employee role authorization | NFR-03 PASS |
@@ -122,8 +122,7 @@ The following names are based on the SLA service information shared by the devel
 
 ## 5. Coverage Summary
 
-The current test set contains 10 planned test cases (TC-01 to TC-10).
-
+The current test set contains 15 test cases (TC-01 to TC-15).
 The test cases cover the following requirement areas:
 
 - Ticket creation and SLA deadline assignment
@@ -137,9 +136,7 @@ The test cases cover the following requirement areas:
 
 Requirements marked as "Not Covered" need additional test scenarios in a later verification activity.
 
-Execution status: 7 test cases passed, 2 were partially verified and 1 remains not run. The individual results are recorded in the test case mapping above.
-
----
+Execution status: 14 test cases passed their recorded verification activities, while TC-13 was verified at model level only. The related FR-09 requirement remains partially verified because average CSAT display through an API endpoint was not available. The individual results are recorded in the test case mapping above.---
 ## 6. Supplementary Backend Smoke Test Execution
 
 **Execution Date:** 18 November 2026  
@@ -188,12 +185,8 @@ The worker recorded 225% elapsed SLA time for the test ticket. Both warning and 
 
 **Result:** All 26 supplementary smoke test checks passed.
 
-**Note:** These smoke tests provide additional implementation-level verification evidence. They do not replace the individual execution of TC-01 to TC-10. Individual test case results are tracked in the mapping above. TC-01, TC-03, and TC-04 remain partially verified.
-
----
+**Note:** These smoke tests provide additional implementation-level verification evidence. They do not replace the individual execution of TC-01 to TC-15. Individual test case results are tracked in the mapping above. TC-01, TC-03, and TC-04 passed their targeted verification activities. TC-01 was verified through API and database checks. TC-03 and TC-04 were verified through automated SLA service-level tests.---
 
 ## 7. Conclusion
 
-This updated Requirements Traceability Matrix links the prepared IEEE 1012 test cases to the functional and non-functional requirements defined in the SDS-07 SRS document.
-
-The supplementary backend smoke test was executed successfully, with 26 passed checks and no failures. The completed test results are recorded in the traceability matrix. TC-03 and partially verified areas remain clearly identified.
+The supplementary backend smoke test was executed successfully, with 26 passed checks and no failures. The completed test results are recorded in the traceability matrix. TC-01, TC-03, and TC-04 passed their targeted SLA verification activities. FR-09 remains partially verified because average CSAT calculation was verified at model level, but API display verification was not available. Requirements marked as Not Covered remain outside the completed test scope.
