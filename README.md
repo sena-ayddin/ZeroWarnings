@@ -8,10 +8,11 @@ Node.js / Express + MySQL (`helpdesk_db`). Katmanlı mimari: `routes` → `contr
 cd backend
 cp .env.example .env        # JWT_SECRET ve DB_* değerlerini doldurun
 npm install
-npm run seed:passwords      # seed kullanıcılarına gerçek bcrypt şifresi yazar
+npm run seed:passwords      # seed kullanıcılarına gerçek bcrypt şifresi yazar (giriş için gerekli)
 npm run dev                 # http://localhost:3000
 npm run test:smoke          # (ayrı terminalde) uçtan uca duman testi
 ```
+`seed.sql` içindeki şifre hash'leri örnek veridir; `npm run seed:passwords` çalıştırılmadan giriş yapılamaz.
 
 ## Test kullanıcıları (seed:passwords sonrası)
 | Rol | E-posta | Şifre |
@@ -30,10 +31,20 @@ npm run test:smoke          # (ayrı terminalde) uçtan uca duman testi
 | GET | /api/tickets | Tüm roller | Biletleri SLA durumuyla listeler (Employee: sadece kendi) |
 | GET | /api/tickets/:id | Tüm roller | Detay (`INC-1024` veya sayısal `ticket_id`) |
 | PATCH | /api/tickets/:id/status | Technician, Administrator | Durum güncelleme / teknisyen atama (Audit_Logs'a yazılır) |
-| GET | /api/kpi | Administrator | Açık/çözülen sayısı, SLA uyum %, MTTR |
+| POST | /api/tickets/:id/feedback | Bilet sahibi | CSAT puanı (1-5) ve yorum |
+| GET | /api/kpi | Administrator | Açık/çözülen sayısı, SLA uyum %, MTTR, CSAT ortalaması |
 | GET | /api/health | Herkes | Sunucu ve veritabanı durumu |
 
 Korumalı uçlar için başlık: `Authorization: Bearer <token>`
+
+Yanıtlardaki bilet nesnesi `ticket_number`, `title`, `request_type`, `priority`, `status`, `resolution_due_at` alanlarını ve `sla` bloğunu (`slaStatus`: ON_TRACK / WARNING / ESCALATED, `remainingMinutes`, `percentageElapsed`) içerir. Liste yanıtı `{ "success": true, "count": n, "tickets": [...] }` biçimindedir.
+
+### Bilet açma gövdesi
+```json
+{ "title": "Bilgisayar açılmıyor", "description": "...", "category": "Hardware",
+  "priority": "High", "request_type": "Incident" }
+```
+`category`: Hardware, Software, Network, Access, Email, Other · `priority`: Low, Medium, High, Critical · `request_type`: `Incident` veya `Change Request`
 
 ### PATCH /api/tickets/:id/status
 ```json
@@ -44,30 +55,33 @@ Korumalı uçlar için başlık: `Authorization: Bearer <token>`
 ```
 `status`: In Progress, Resolved, Closed. Kapalı bilet güncellenemez (409). Bilet güncellemesi ve audit kaydı tek transaction'dadır.
 
+### POST /api/tickets/:id/feedback
+```json
+{ "satisfaction_rating": 5, "comments": "Problem hızlı çözüldü." }
+```
+Sadece bilet sahibi, sadece `Resolved` veya `Closed` bilet için ve bilet başına bir kez gönderebilir (aksi halde 403 / 409). Puan 1-5 tam sayı olmalıdır (400). Geri bildirim ve audit kaydı tek transaction'dadır.
+
 ### GET /api/kpi
 ```json
 { "kpi": { "total_tickets": 12, "open_tickets": 5, "resolved_tickets": 7, "resolved_this_month": 7,
-           "sla_compliance_percent": 85.71, "mttr_minutes": 190.5, "mttr_hours": 3.18, "generated_at": "..." } }
+           "sla_compliance_percent": 85.71, "mttr_minutes": 190.5, "mttr_hours": 3.18,
+           "total_feedback": 4, "average_csat": 4.5, "generated_at": "..." } }
 ```
 - **SLA Uyum Oranı** = SLA içinde çözülenler / (çözülenler + süresi geçmiş açık biletler) × 100
-- **MTTR** = çözülen biletlerin ortalama çözüm süresi (mesai dakikası, `slaService.calculateBusinessMinutes`)
+- **MTTR** = çözülen biletlerin ortalama çözüm süresi (mesai dakikası, `slaService.calculateBusinessMinutes`). Mesai dışında açılıp çözülen biletlerde 0 çıkması normaldir.
+- **CSAT** = `Customer_Feedback.satisfaction_rating` ortalaması
 
-### Bilet açma gövdesi
-```json
-{ "title": "Bilgisayar açılmıyor", "description": "...", "category": "Hardware",
-  "priority": "High", "request_type": "Incident" }
-```
-`category`: Hardware, Software, Network, Access, Email, Other · `priority`: Low, Medium, High, Critical · `request_type`: Incident, Change Request
+Formül ayrıntıları: `docs/KPI_CSAT_Formulas.md`
 
-## Test Kullanıcıları ve Şifreler
-`seed.sql` dosyasındaki şifre hash'leri örnek veridir. Sisteme sorunsuz giriş yapabilmek için veritabanını kurduktan sonra `backend` klasöründe şu komutları çalıştırmalısınız:
-```bash
-npm install
-npm run seed:passwords
-```
+## Otomatik SLA izleyicisi
+Sunucu açılırken `services/slaWorker.js` başlar ve açık biletleri periyodik tarar: SLA süresinin %75'inde uyarı (`sla_warning_sent`), %100'de eskalasyon seviye 2, %150'de seviye 3 (`is_escalated`, `escalation_level`). Her olay `Audit_Logs`'a yazılır. Kontrol aralığı `.env` içindeki `SLA_WORKER_INTERVAL_MS` ile ayarlanır (varsayılan 60 sn, en az 15 sn).
 
 ## Hata biçimi
 ```json
 { "success": false, "error": { "status": 403, "message": "...", "details": [] } }
 ```
 400 doğrulama · 401 token yok/geçersiz · 403 yetki yok · 404 bulunamadı · 409 çakışma · 503 veritabanı yok · 500 sunucu hatası
+
+## Ön yüz entegrasyonu
+- Giriş: `POST /api/auth/login` → dönen `token` her istekte `Authorization: Bearer <token>` başlığıyla gönderilmelidir.
+- Sayfalar Live Server ile `http://localhost:5500` veya `http://127.0.0.1:5500` üzerinden açılmalıdır (CORS izin listesi `.env` içindeki `CORS_ORIGIN`'dir; `file://` ile çalışmaz).
