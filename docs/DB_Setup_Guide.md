@@ -88,6 +88,24 @@ The backend application should connect to the following database:
 | Username | Your MySQL username |
 | Password | Your MySQL password |
 
+
+In the `backend` folder, create a `.env` file (for example by copying `.env.example`) and fill in `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, and `JWT_SECRET`.
+
+Note that the password hashes in `seed.sql` are placeholder/sample values, so you cannot log in with test accounts until real password hashes are generated. After configuring `.env`, run the following commands inside `backend`:
+
+```bash
+npm install
+npm run seed:passwords
+```
+
+Test accounts after seeding passwords:
+
+-Employee: ahmet@iku.edu.tr / Emp123!
+
+-Technician: mehmet@iku.edu.tr / Tech123!
+
+-Administrator: elif@iku.edu.tr / Admin123!
+
 Database credentials should be stored in the backend `.env` file.
 
 Do not upload real database passwords or credentials to GitHub.
