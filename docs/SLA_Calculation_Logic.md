@@ -1,3 +1,4 @@
+[SLA_Calculation_Logic.md](https://github.com/user-attachments/files/35421933/SLA_Calculation_Logic.md)
 
 # SDS-07 – SLA Calculation Logic
 
@@ -5,7 +6,7 @@
 **Project Code:** SDS-07  
 **Standard:** ISO 9001:2015  
 **Responsible:** Gülçin Hacıimam  
-**Version:** 1.0
+**Version:** 1.1
 
 ## 1. Purpose
 
@@ -84,33 +85,51 @@ The timer does not progress overnight or during weekends.
 
 ## 6. Warning and Escalation Mechanism
 
-The system monitors the percentage of consumed SLA time.
+The background SLA worker monitors the percentage of consumed business SLA time for unresolved tickets. It uses the thresholds configured in `SLA_Policies`, with defaults of 75% for warnings and 100% for initial escalation.
 
-| SLA Consumption | Status | System Action |
-|-----------------|--------|---------------|
-| Below 75% | ON_TRACK | Normal monitoring |
-| 75% or above | WARNING | Warning flag activated |
-| 100% / Deadline reached | ESCALATED | Escalation flag activated |
+| SLA Consumption (default policy) | Escalation Level | System Action |
+|----------------------------------|------------------|--------------|
+| Below 75% | Level 1 | Normal monitoring |
+| 75% or above | Level 1 | Activate warning flag if it has not already been sent |
+| 100% or above | Level 2 | Set escalation flag and update escalation level |
+| 150% or above | Level 3 | Advance to the second escalation level (maximum level implemented) |
 
 ### Warning Mechanism
 
-When 75% of the allocated SLA time has elapsed, the system changes the SLA status to WARNING.
+When consumed SLA time reaches the configured warning threshold (normally 75%), the worker sets `sla_warning_sent = TRUE` and records the `SLA_WARNING_75_PERCENT` audit action. The warning is sent/recorded only once per ticket by this worker.
 
-This indicates that the ticket is approaching its resolution deadline.
+### Level 2 Escalation – 100%
 
-### Escalation Mechanism
+When consumed SLA time reaches the configured escalation threshold (normally 100%), the worker sets `is_escalated = TRUE` and advances `escalation_level` to at least `2`. The audit action is `SLA_ESCALATED_LEVEL_2`.
 
-When the SLA deadline is reached, the system changes the SLA status to ESCALATED.
+### Level 3 Escalation – 150%
 
-The escalated flag becomes true.
+The worker calculates the Level 3 trigger as **the configured escalation threshold plus 50 percentage points**. With the default escalation threshold of 100%, this triggers Level 3 at **150% SLA consumption**.
 
-This identifies tickets requiring escalation to the responsible team or higher-level management.
+At this threshold, the worker advances `escalation_level` to `3` and records `SLA_ESCALATED_LEVEL_3`. Level 3 is the maximum escalation level implemented. Existing higher/current levels are not downgraded.
+
+### Background Worker Control Interval
+
+The worker's polling interval is configured through the environment variable:
+
+`SLA_WORKER_INTERVAL_MS`
+
+- Default: **60,000 milliseconds (60 seconds)**
+- Minimum: **15,000 milliseconds (15 seconds)**
+
+The implementation applies `Math.max(15000, ...)`, so a configured interval below 15 seconds is raised to the minimum. If the variable is missing, invalid, or zero, the default 60,000 ms is used.
+
+When `start()` is called, the worker performs an initial check immediately and then checks at the configured interval using `setInterval`. A `running` guard prevents concurrent overlapping checks.
 
 ## 7. Main JavaScript Functions
 
 The SLA calculation service is implemented in:
 
 `backend/src/services/slaService.js`
+
+The scheduled monitor is implemented in:
+
+`backend/src/services/slaWorker.js`
 
 | Function | Description |
 |----------|-------------|
@@ -174,6 +193,6 @@ Future improvements may include:
 
 The SLA calculation service provides a structured approach to monitoring IT support requests.
 
-By calculating resolution deadlines using business hours, generating warnings at the 75% threshold and triggering escalation at the 100% threshold, the system supports service quality monitoring and process control.
+By calculating resolution deadlines using business hours, generating warnings at the default 75% threshold, escalating to Level 2 at the default 100% threshold, and advancing to Level 3 at the default 150% threshold, the system supports service quality monitoring and process control. The background worker polls by default every 60 seconds, with a 15-second minimum.
 
 This implementation contributes to the quality management objectives of the SDS-07 project.
