@@ -14,5 +14,16 @@ INSERT INTO SLA_Policies (policy_name, priority, response_time_minutes, resoluti
 ('Critical Priority Policy', 'Critical', 15, 120);
 
 -- 3. Örnek Bilet (SLA Politikasıyla ve UTC Saat Standardıyla Uyumlu)
-INSERT INTO Tickets (ticket_number, user_id, assigned_to, sla_policy_id, title, description, category, priority, status, request_type, response_due_at, resolution_due_at) VALUES 
-('INC-1024', 1, 2, 3, 'Monitör Görüntü Vermiyor', 'Ofisteki ikincil monitörüm HDMI kablosunu kontrol etmeme rağmen açılmıyor.', 'Hardware', 'High', 'Open', 'Incident', DATE_ADD(UTC_TIMESTAMP(), INTERVAL 60 MINUTE), DATE_ADD(UTC_TIMESTAMP(), INTERVAL 240 MINUTE));
+INSERT INTO Tickets (
+    ticket_number, user_id, assigned_to, sla_policy_id,
+    title, description, category, priority, status, request_type,
+    created_at, response_due_at, resolution_due_at
+) VALUES (
+    'INC-1024', 1, 2, 3,
+    'Monitör Görüntü Vermiyor',
+    'Ofisteki ikincil monitörüm HDMI kablosunu kontrol etmeme rağmen açılmıyor.',
+    'Hardware', 'High', 'Open', 'Incident',
+    UTC_TIMESTAMP(),
+    DATE_ADD(UTC_TIMESTAMP(), INTERVAL 60 MINUTE),
+    DATE_ADD(UTC_TIMESTAMP(), INTERVAL 240 MINUTE)
+);
