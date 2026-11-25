@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign In | IT Service Desk</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #0f2147;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 12px;
+      padding: 36px 32px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f2147;
+      margin-bottom: 8px;
+    }
+
+    .brand svg {
+      width: 26px;
+      height: 26px;
+      fill: none;
+      stroke: #2563eb;
+      stroke-width: 2.2;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 28px;
+    }
+
+    .field-group {
+      margin-bottom: 18px;
+    }
+
+    .field-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 6px;
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .text-input:focus {
+      border-color: #2563eb;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background-color: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    .btn-login:hover {
+      background-color: #1d4ed8;
+    }
+
+    .error-box {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      font-size: 13px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+
+    .quick-accounts {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .quick-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .quick-btns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .quick-btn {
+      padding: 7px 8px;
+      font-size: 12px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      color: #334155;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .quick-btn:hover {
+      background: #eff6ff;
+      border-color: #2563eb;
+      color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <div class="brand">
+      <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
+      IT Service Desk
+    </div>
+    <p class="subtitle">ISO 9001 Compliant Support Portal (SDS-07)</p>
+
+    <div class="error-box" id="errorBox"></div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="field-group">
+        <label>Email Address</label>
+        <input type="email" class="text-input" id="emailInput" placeholder="user@iku.edu.tr" required>
+      </div>
+
+      <div class="field-group">
+        <label>Password</label>
+        <input type="password" class="text-input" id="passwordInput" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="btn-login" id="loginBtn">Sign In</button>
+    </form>
+
+    <div class="quick-accounts">
+      <div class="quick-title">Seed Accounts (Click to Autofill)</div>
+      <div class="quick-btns">
+        <button type="button" class="quick-btn" onclick="fillAccount('ahmet@iku.edu.tr')">Employee</button>
+        <button type="button" class="quick-btn" onclick="fillAccount('mehmet@iku.edu.tr')">Technician</button>
+        <button type="button" class="quick-btn" onclick="fillAccount('elif@iku.edu.tr')">Admin</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    function fillAccount(email) {
+      document.getElementById("emailInput").value = email;
+      document.getElementById("passwordInput").value = "123456";
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById("emailInput").value.trim();
+      const password = document.getElementById("passwordInput").value;
+      const errorBox = document.getElementById("errorBox");
+      const btn = document.getElementById("loginBtn");
+
+      errorBox.style.display = "none";
+      btn.disabled = true;
+      btn.innerText = "Signing in...";
+
+      try {
+        await loginAPI(email, password);
+        window.location.href = "index.html";
+      } catch (err) {
+        errorBox.innerText = err.message;
+        errorBox.style.display = "block";
+        btn.disabled = false;
+        btn.innerText = "Sign In";
+      }
+    }
+  </script>
+</body>
+</html>

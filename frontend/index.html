@@ -123,18 +123,19 @@
     .user-profile {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 14px;
     }
 
-    .avatar-circle {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: #94a3b8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .auth-btn {
+      padding: 7px 14px;
+      background: #2563eb;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
       color: #ffffff;
+      text-decoration: none;
+      cursor: pointer;
     }
 
     .content {
@@ -265,10 +266,10 @@
         <a href="index.html" class="nav-item active">🏠 Home</a>
         <a href="create-ticket.html" class="nav-item">➕ Create Ticket</a>
         <a href="dashboard.html" class="nav-item">📋 My Tickets</a>
-        <a href="#" class="nav-item">📊 SLA Monitoring</a>
-        <a href="#" class="nav-item">⏱️ KPI Reports</a>
+        <a href="dashboard.html" class="nav-item">📊 SLA Monitoring</a>
+        <a href="dashboard.html" class="nav-item">⏱️ KPI Reports</a>
         <a href="feedback.html" class="nav-item">⭐ Feedback / Survey</a>
-        <a href="#" class="nav-item">❓ Help / FAQ</a>
+        <a href="login.html" class="nav-item">🔑 Sign In</a>
       </nav>
     </aside>
 
@@ -278,10 +279,8 @@
           <svg class="search-icon" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           <input type="text" placeholder="Search...">
         </div>
-        <div class="user-profile">
-          <div class="avatar-circle">
-            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-          </div>
+        <div class="user-profile" id="authHeaderArea">
+          <a href="login.html" class="auth-btn">Sign In</a>
         </div>
       </header>
 
@@ -324,5 +323,20 @@
     </div>
   </div>
 
+  <script src="js/api.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const area = document.getElementById("authHeaderArea");
+      const token = getAuthToken();
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+      if (token) {
+        area.innerHTML = `
+          <span style="font-size: 13px; font-weight: 600; color: #334155;">${user.full_name || "Authenticated"}</span>
+          <button type="button" class="auth-btn" style="background:#ffffff; color:#475569; border:1px solid #cbd5e1;" onclick="logoutAPI()">Logout</button>
+        `;
+      }
+    });
+  </script>
 </body>
 </html>

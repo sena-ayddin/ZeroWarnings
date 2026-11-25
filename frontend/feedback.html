@@ -90,6 +90,17 @@
       padding: 0 40px;
     }
 
+    .logout-btn {
+      padding: 6px 12px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+    }
+
     .content {
       padding: 8px 40px 40px 40px;
       max-width: 820px;
@@ -208,17 +219,17 @@
         <a href="index.html" class="nav-item">🏠 Home</a>
         <a href="create-ticket.html" class="nav-item">➕ Create Ticket</a>
         <a href="dashboard.html" class="nav-item">📋 My Tickets</a>
-        <a href="#" class="nav-item">📊 SLA Monitoring</a>
-        <a href="#" class="nav-item">⏱️ KPI Reports</a>
+        <a href="dashboard.html" class="nav-item">📊 SLA Monitoring</a>
+        <a href="dashboard.html" class="nav-item">⏱️ KPI Reports</a>
         <a href="feedback.html" class="nav-item active">⭐ Feedback / Survey</a>
-        <a href="#" class="nav-item">❓ Help / FAQ</a>
+        <a href="login.html" class="nav-item">🔑 Sign In</a>
       </nav>
     </aside>
 
     <div class="main-wrapper">
       <header class="top-header">
-        <span style="font-size: 14px; font-weight: 500; color: #475569;">Customer Satisfaction Portal</span>
-        <span style="font-size: 13px; color: #64748b;">ISO 9001 Clause 9.1.2</span>
+        <span style="font-size: 14px; font-weight: 500; color: #475569;">Customer Satisfaction Portal (ISO 9001 Clause 9.1.2)</span>
+        <button type="button" class="logout-btn" onclick="logoutAPI()">Logout</button>
       </header>
 
       <main class="content">
@@ -232,11 +243,9 @@
 
           <form id="csatForm">
             <div class="field-group">
-              <label>Resolved Ticket</label>
+              <label>Resolved / Closed Ticket</label>
               <select class="select-input" id="resolvedTicketSelect">
-                <option value="INC-1018">INC-1018 - Outlook Mail Configuration (Resolved)</option>
-                <option value="INC-1015">INC-1015 - Monitor Display Flickering (Resolved)</option>
-                <option value="CHG-0869">CHG-0869 - Adobe Creative Cloud License (Completed)</option>
+                <option value="">Loading eligible tickets...</option>
               </select>
             </div>
 
@@ -277,33 +286,68 @@
 
     function setRating(score) {
       selectedScore = score;
-      const buttons = document.querySelectorAll('.star-btn');
+      const buttons = document.querySelectorAll(".star-btn");
       buttons.forEach((btn, index) => {
-        btn.classList.toggle('selected', index < score);
+        btn.classList.toggle("selected", index < score);
       });
-      document.getElementById('ratingLabel').innerText = labels[score];
+      document.getElementById("ratingLabel").innerText = labels[score];
+    }
+
+    async function loadEligibleTickets() {
+      if (!getAuthToken()) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const selectEl = document.getElementById("resolvedTicketSelect");
+      try {
+        const tickets = await getTicketsAPI();
+        const eligible = tickets.filter(t => t.status === "Resolved" || t.status === "Closed");
+
+        selectEl.innerHTML = "";
+        if (eligible.length === 0) {
+          selectEl.innerHTML = '<option value="">No Resolved or Closed tickets available for survey</option>';
+          return;
+        }
+
+        eligible.forEach(ticket => {
+          const opt = document.createElement("option");
+          opt.value = ticket.id;
+          opt.text = `${ticket.ticket_number} - ${ticket.title} (${ticket.status})`;
+          selectEl.appendChild(opt);
+        });
+      } catch (error) {
+        selectEl.innerHTML = '<option value="">Failed to load tickets from server</option>';
+      }
     }
 
     async function sendCSAT() {
+      const ticketId = document.getElementById("resolvedTicketSelect").value;
+      if (!ticketId) {
+        alert("Please select a valid Resolved or Closed ticket.");
+        return;
+      }
+
       if (selectedScore === 0) {
         alert("Please select a star rating between 1 and 5 before submitting.");
         return;
       }
 
       const payload = {
-        ticket_id: document.getElementById('resolvedTicketSelect').value,
-        rating: selectedScore,
-        comment: document.getElementById('feedbackComment').value
+        satisfaction_rating: selectedScore,
+        comments: document.getElementById("feedbackComment").value.trim()
       };
 
       try {
-        await submitFeedbackAPI(payload);
+        await submitFeedbackAPI(ticketId, payload);
         alert("Your feedback has been recorded successfully. Thank you!");
-        window.location.href = 'index.html';
+        window.location.href = "dashboard.html";
       } catch (error) {
-        alert("Waiting for backend connection (API Endpoint: POST /api/feedback).");
+        alert(error.message);
       }
     }
+
+    window.addEventListener("DOMContentLoaded", loadEligibleTickets);
   </script>
 </body>
 </html>

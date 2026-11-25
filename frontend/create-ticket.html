@@ -118,38 +118,18 @@
     .user-profile {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 14px;
     }
 
-    .bell-icon {
-      position: relative;
-    }
-
-    .bell-dot {
-      position: absolute;
-      top: -2px;
-      right: -2px;
-      width: 6px;
-      height: 6px;
-      background-color: #ef4444;
-      border-radius: 50%;
-    }
-
-    .avatar-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .avatar-circle {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: #94a3b8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
+    .logout-btn {
+      padding: 6px 12px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
     }
 
     .content {
@@ -405,10 +385,10 @@
         <a href="index.html" class="nav-item">🏠 Home</a>
         <a href="create-ticket.html" class="nav-item active">➕ Create Ticket</a>
         <a href="dashboard.html" class="nav-item">📋 My Tickets</a>
-        <a href="#" class="nav-item">📊 SLA Monitoring</a>
-        <a href="#" class="nav-item">⏱️ KPI Reports</a>
+        <a href="dashboard.html" class="nav-item">📊 SLA Monitoring</a>
+        <a href="dashboard.html" class="nav-item">⏱️ KPI Reports</a>
         <a href="feedback.html" class="nav-item">⭐ Feedback / Survey</a>
-        <a href="#" class="nav-item">❓ Help / FAQ</a>
+        <a href="login.html" class="nav-item">🔑 Sign In</a>
       </nav>
     </aside>
 
@@ -419,16 +399,8 @@
           <input type="text" placeholder="Search...">
         </div>
         <div class="user-profile">
-          <div class="bell-icon">
-            <svg width="20" height="20" fill="none" stroke="#475569" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-            <span class="bell-dot"></span>
-          </div>
-          <div class="avatar-btn">
-            <div class="avatar-circle">
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-            </div>
-            <svg width="14" height="14" fill="none" stroke="#64748b" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </div>
+          <span id="userDisplay" style="font-size: 13px; font-weight: 600; color: #334155;"></span>
+          <button type="button" class="logout-btn" onclick="logoutAPI()">Logout</button>
         </div>
       </header>
 
@@ -450,7 +422,7 @@
                     </div>
                   </label>
                   <label class="type-box" id="chgBox">
-                    <input type="radio" name="reqType" value="Change" onclick="selectType('Change')">
+                    <input type="radio" name="reqType" value="Change Request" onclick="selectType('Change Request')">
                     <div>
                       <div class="type-box-title">Change Request</div>
                       <div class="type-box-sub">Request a change (e.g., new access, software, hardware).</div>
@@ -466,12 +438,14 @@
                     <option value="Hardware">💻 Hardware</option>
                     <option value="Software">Software</option>
                     <option value="Network">Network</option>
+                    <option value="Access">Access</option>
                   </select>
                 </div>
                 <div>
                   <label>Priority <span class="req">*</span></label>
                   <select class="select-input" id="prioSelect" onchange="changePriority()">
-                    <option value="High">🚩 High</option>
+                    <option value="Critical">🚨 Critical</option>
+                    <option value="High" selected>🚩 High</option>
                     <option value="Medium">Medium</option>
                     <option value="Low">Low</option>
                   </select>
@@ -480,12 +454,12 @@
 
               <div class="field-group">
                 <label>Subject <span class="req">*</span></label>
-                <input type="text" class="text-input" id="subjInput" value="Computer does not turn on">
+                <input type="text" class="text-input" id="subjInput" placeholder="Enter a clear summary of your request" required>
               </div>
 
               <div class="field-group">
                 <label>Description <span class="req">*</span></label>
-                <textarea class="text-area" id="descInput">My computer does not turn on this morning. The power button does not respond.</textarea>
+                <textarea class="text-area" id="descInput" placeholder="Provide detailed information about the issue or change request..." required></textarea>
               </div>
 
               <div class="field-group">
@@ -545,67 +519,76 @@
 
   <script src="js/api.js"></script>
   <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      if (!getAuthToken()) {
+        window.location.href = "login.html";
+        return;
+      }
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (user.full_name) {
+        document.getElementById("userDisplay").innerText = user.full_name;
+      }
+    });
+
     function selectType(val) {
-      if (val === 'Incident') {
-        document.getElementById('incBox').className = 'type-box active';
-        document.getElementById('chgBox').className = 'type-box';
+      if (val === "Incident") {
+        document.getElementById("incBox").className = "type-box active";
+        document.getElementById("chgBox").className = "type-box";
       } else {
-        document.getElementById('incBox').className = 'type-box';
-        document.getElementById('chgBox').className = 'type-box active';
+        document.getElementById("incBox").className = "type-box";
+        document.getElementById("chgBox").className = "type-box active";
       }
     }
 
     function changePriority() {
-      var p = document.getElementById('prioSelect').value;
-      var el = document.getElementById('slaHours');
-      if (p === 'High') {
-        el.innerText = '4 hours';
-      } else if (p === 'Medium') {
-        el.innerText = '8 hours';
-      } else {
-        el.innerText = '24 hours';
-      }
+      const p = document.getElementById("prioSelect").value;
+      const el = document.getElementById("slaHours");
+      if (p === "Critical") el.innerText = "2 hours";
+      else if (p === "High") el.innerText = "4 hours";
+      else if (p === "Medium") el.innerText = "8 hours";
+      else el.innerText = "16 hours";
     }
 
     function updateFileName() {
-      var fileInput = document.getElementById('fileElem');
-      var label = document.getElementById('fileStatus');
-      if (fileInput.files.length > 0) {
-        label.innerText = fileInput.files[0].name;
-      } else {
-        label.innerText = 'No file selected';
-      }
+      const fileInput = document.getElementById("fileElem");
+      const label = document.getElementById("fileStatus");
+      label.innerText = fileInput.files.length > 0 ? fileInput.files[0].name : "No file selected";
     }
 
     async function submitTicket() {
-      var subject = document.getElementById('subjInput').value;
-      var description = document.getElementById('descInput').value;
-      var category = document.getElementById('catSelect').value;
-      var priority = document.getElementById('prioSelect').value;
-      var radios = document.getElementsByName('reqType');
-      var typeVal = 'Incident';
+      const title = document.getElementById("subjInput").value.trim();
+      const description = document.getElementById("descInput").value.trim();
+      const category = document.getElementById("catSelect").value;
+      const priority = document.getElementById("prioSelect").value;
+      const radios = document.getElementsByName("reqType");
+      let requestType = "Incident";
 
-      for (var i = 0; i < radios.length; i++) {
+      for (let i = 0; i < radios.length; i++) {
         if (radios[i].checked) {
-          typeVal = radios[i].value;
+          requestType = radios[i].value;
           break;
         }
       }
 
-      var payload = {
-        title: subject,
+      if (!title || !description) {
+        alert("Please fill in both Subject and Description fields.");
+        return;
+      }
+
+      const payload = {
+        title: title,
         description: description,
         category: category,
-        type: typeVal,
+        request_type: requestType,
         priority: priority
       };
 
       try {
         await createTicketAPI(payload);
-        alert("Support ticket has been successfully submitted to the server!");
-        window.location.href = 'dashboard.html';
+        alert("Support ticket has been successfully created!");
+        window.location.href = "dashboard.html";
       } catch (error) {
-        alert("Waiting for backend connection (API Endpoint: POST /api/tickets).");
+        alert(error.message);
       }
     }
   </script>

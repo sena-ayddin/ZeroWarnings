@@ -102,9 +102,15 @@
       color: #475569;
     }
 
-    .header-badge {
-      font-size: 14px;
+    .logout-btn {
+      padding: 6px 12px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
       color: #475569;
+      cursor: pointer;
     }
 
     .content {
@@ -233,8 +239,13 @@
       color: #334155;
     }
 
-    .badge-risk {
+    .badge-escalated {
       color: #dc2626;
+      font-weight: 700;
+    }
+
+    .badge-warning {
+      color: #d97706;
       font-weight: 700;
     }
 
@@ -283,17 +294,20 @@
         <a href="index.html" class="nav-item">🏠 Home</a>
         <a href="create-ticket.html" class="nav-item">➕ Create Ticket</a>
         <a href="dashboard.html" class="nav-item active">📋 My Tickets</a>
-        <a href="#" class="nav-item">📊 SLA Monitoring</a>
-        <a href="#" class="nav-item">⏱️ KPI Reports</a>
+        <a href="dashboard.html" class="nav-item">📊 SLA Monitoring</a>
+        <a href="dashboard.html" class="nav-item">⏱️ KPI Reports</a>
         <a href="feedback.html" class="nav-item">⭐ Feedback / Survey</a>
-        <a href="#" class="nav-item">❓ Help / FAQ</a>
+        <a href="login.html" class="nav-item">🔑 Sign In</a>
       </nav>
     </aside>
 
     <div class="main-wrapper">
       <header class="top-header">
-        <span class="header-label">Technician Workspace</span>
-        <span class="header-badge">IT Support</span>
+        <span class="header-label">Service Desk Workspace</span>
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <span id="userDisplay" style="font-size: 13px; font-weight: 600; color: #334155;"></span>
+          <button type="button" class="logout-btn" onclick="logoutAPI()">Logout</button>
+        </div>
       </header>
 
       <main class="content">
@@ -302,20 +316,20 @@
 
         <div class="metrics-grid">
           <div class="metric-card">
-            <div class="metric-label">Open Tickets</div>
-            <div class="metric-val" id="totalTicketsCount">38</div>
+            <div class="metric-label">Total Tickets</div>
+            <div class="metric-val" id="totalTicketsCount">0</div>
           </div>
           <div class="metric-card">
-            <div class="metric-label">Resolved This Month</div>
-            <div class="metric-val">142</div>
+            <div class="metric-label">Resolved / Closed</div>
+            <div class="metric-val" id="resolvedTicketsCount">0</div>
           </div>
           <div class="metric-card">
             <div class="metric-label">SLA Compliance</div>
-            <div class="metric-val">96%</div>
+            <div class="metric-val" id="slaComplianceVal">100%</div>
           </div>
           <div class="metric-card">
-            <div class="metric-label">Customer Satisfaction</div>
-            <div class="metric-val">4.6 / 5</div>
+            <div class="metric-label">Active Alerts</div>
+            <div class="metric-val" id="activeAlertsCount">0</div>
           </div>
         </div>
 
@@ -344,21 +358,9 @@
           <div class="panel-card">
             <div class="panel-title">SLA Alerts</div>
             <table class="table-base">
-              <tbody>
+              <tbody id="slaAlertsBody">
                 <tr>
-                  <td><strong>INC-1024</strong></td>
-                  <td class="badge-risk" id="alertTimer">00:42:18</td>
-                  <td class="badge-risk">At risk</td>
-                </tr>
-                <tr>
-                  <td><strong>INC-1023</strong></td>
-                  <td><strong>02:15:37</strong></td>
-                  <td class="badge-ontrack">On track</td>
-                </tr>
-                <tr>
-                  <td><strong>CHG-0871</strong></td>
-                  <td><strong>06:28:10</strong></td>
-                  <td class="badge-ontrack">On track</td>
+                  <td colspan="3" style="color: #64748b;">Loading SLA status...</td>
                 </tr>
               </tbody>
             </table>
@@ -370,54 +372,26 @@
           <table class="table-base">
             <thead>
               <tr>
-                <th>Ticket ID</th>
-                <th>Subject</th>
-                <th>Type</th>
+                <th>Ticket Number</th>
+                <th>Title</th>
+                <th>Request Type</th>
                 <th>Priority</th>
                 <th>SLA Remaining</th>
+                <th>SLA Status</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody id="ticketListBody">
               <tr>
-                <td><strong>INC-1024</strong></td>
-                <td>Computer will not start</td>
-                <td>Incident</td>
-                <td>High</td>
-                <td class="badge-risk" id="tableTimer">00:42:18</td>
-                <td class="badge-risk">At risk</td>
-              </tr>
-              <tr>
-                <td><strong>INC-1023</strong></td>
-                <td>Printer not responding</td>
-                <td>Incident</td>
-                <td>Medium</td>
-                <td>02:15:37</td>
-                <td>In progress</td>
-              </tr>
-              <tr>
-                <td><strong>CHG-0871</strong></td>
-                <td>VPN access request</td>
-                <td>Change</td>
-                <td>Medium</td>
-                <td>06:28:10</td>
-                <td>Assigned</td>
-              </tr>
-              <tr>
-                <td><strong>INC-1019</strong></td>
-                <td>Email synchronization issue</td>
-                <td>Incident</td>
-                <td>Low</td>
-                <td>Within SLA</td>
-                <td>In progress</td>
+                <td colspan="7" style="color: #64748b;">Loading tickets from server...</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <div class="escalation-box">
+        <div class="escalation-box" id="escalationBox" style="display: none;">
           <h4>Escalation Monitoring</h4>
-          <p><strong>INC-1024</strong> | SLA risk detected | Escalation: Level 2 technician | Next action: notify team lead</p>
+          <p id="escalationText"></p>
         </div>
       </main>
     </div>
@@ -425,49 +399,103 @@
 
   <script src="js/api.js"></script>
   <script>
-    var totalSeconds = 42 * 60 + 18;
-
-    function runCountdown() {
-      if (totalSeconds > 0) {
-        totalSeconds--;
-        var h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-        var m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-        var s = String(totalSeconds % 60).padStart(2, '0');
-        var text = h + ':' + m + ':' + s;
-        if (document.getElementById('alertTimer')) document.getElementById('alertTimer').innerText = text;
-        if (document.getElementById('tableTimer')) document.getElementById('tableTimer').innerText = text;
-      }
+    function formatMinutes(minutes) {
+      if (minutes === null || minutes === undefined) return "N/A";
+      if (minutes <= 0) return "00:00 (Breached)";
+      const hrs = String(Math.floor(minutes / 60)).padStart(2, "0");
+      const mins = String(minutes % 60).padStart(2, "0");
+      return `${hrs}h ${mins}m`;
     }
-    setInterval(runCountdown, 1000);
+
+    function getSlaBadgeClass(slaStatus) {
+      if (slaStatus === "ESCALATED") return "badge-escalated";
+      if (slaStatus === "WARNING") return "badge-warning";
+      return "badge-ontrack";
+    }
 
     async function loadDashboardTickets() {
+      if (!getAuthToken()) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (user.full_name) {
+        document.getElementById("userDisplay").innerText = user.full_name;
+      }
+
       try {
         const tickets = await getTicketsAPI();
-        const tbody = document.getElementById('ticketListBody');
-        const counter = document.getElementById('totalTicketsCount');
+        const tbody = document.getElementById("ticketListBody");
+        const alertsBody = document.getElementById("slaAlertsBody");
 
-        if (tickets && tickets.length > 0) {
-          counter.innerText = tickets.length;
-          tbody.innerHTML = '';
+        document.getElementById("totalTicketsCount").innerText = tickets.length;
 
-          tickets.forEach(item => {
-            const row = document.createElement('tr');
-            const statusClass = (item.status === 'At risk' || item.status === 'Breached') ? 'badge-risk' : '';
-            row.innerHTML = '<td><strong>' + (item.ticket_code || item.id) + '</strong></td>' +
-                            '<td>' + (item.title || item.subject) + '</td>' +
-                            '<td>' + (item.type || 'Incident') + '</td>' +
-                            '<td>' + item.priority + '</td>' +
-                            '<td class="' + statusClass + '">' + (item.sla_remaining || '03:59:00') + '</td>' +
-                            '<td class="' + statusClass + '">' + (item.status || 'Open') + '</td>';
-            tbody.appendChild(row);
-          });
+        const resolvedCount = tickets.filter(t => t.status === "Resolved" || t.status === "Closed").length;
+        document.getElementById("resolvedTicketsCount").innerText = resolvedCount;
+
+        const alertTickets = tickets.filter(t => t.sla && (t.sla.slaStatus === "WARNING" || t.sla.slaStatus === "ESCALATED"));
+        document.getElementById("activeAlertsCount").innerText = alertTickets.length;
+
+        if (tickets.length > 0) {
+          const compliant = tickets.filter(t => !t.sla || t.sla.slaStatus !== "ESCALATED").length;
+          document.getElementById("slaComplianceVal").innerText = Math.round((compliant / tickets.length) * 100) + "%";
+        }
+
+        tbody.innerHTML = "";
+        alertsBody.innerHTML = "";
+
+        if (tickets.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="color: #64748b;">No tickets found.</td></tr>';
+          alertsBody.innerHTML = '<tr><td colspan="3" style="color: #64748b;">No active SLA alerts.</td></tr>';
+          return;
+        }
+
+        tickets.forEach(item => {
+          const remaining = item.sla ? formatMinutes(item.sla.remainingMinutes) : "N/A";
+          const slaStatus = item.sla ? item.sla.slaStatus : "ON_TRACK";
+          const badgeClass = getSlaBadgeClass(slaStatus);
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td><strong>${item.ticket_number}</strong></td>
+            <td>${item.title}</td>
+            <td>${item.request_type}</td>
+            <td>${item.priority}</td>
+            <td class="${badgeClass}">${remaining}</td>
+            <td class="${badgeClass}">${slaStatus}</td>
+            <td>${item.status}</td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        const topAlerts = tickets.slice(0, 3);
+        topAlerts.forEach(item => {
+          const remaining = item.sla ? formatMinutes(item.sla.remainingMinutes) : "N/A";
+          const slaStatus = item.sla ? item.sla.slaStatus : "ON_TRACK";
+          const badgeClass = getSlaBadgeClass(slaStatus);
+
+          const alertRow = document.createElement("tr");
+          alertRow.innerHTML = `
+            <td><strong>${item.ticket_number}</strong></td>
+            <td class="${badgeClass}">${remaining}</td>
+            <td class="${badgeClass}">${slaStatus}</td>
+          `;
+          alertsBody.appendChild(alertRow);
+        });
+
+        const escalatedTicket = tickets.find(t => t.sla && t.sla.slaStatus === "ESCALATED");
+        if (escalatedTicket) {
+          document.getElementById("escalationBox").style.display = "block";
+          document.getElementById("escalationText").innerHTML =
+            `<strong>${escalatedTicket.ticket_number}</strong> | SLA breach / escalation detected | Status: ${escalatedTicket.status}`;
         }
       } catch (error) {
-        console.log("Waiting for API connection: GET /api/tickets");
+        console.error("Dashboard load error:", error);
       }
     }
 
-    window.addEventListener('DOMContentLoaded', loadDashboardTickets);
+    window.addEventListener("DOMContentLoaded", loadDashboardTickets);
   </script>
 </body>
 </html>
