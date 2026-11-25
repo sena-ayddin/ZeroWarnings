@@ -1,9 +1,11 @@
-// SLA izleyicisi: açık biletlerde %75 uyarı, %100 eskalasyon.
-// İkinci eskalasyon seviyesi %150 tüketimde devreye girer (azami seviye 3).
+// SLA monitor: warning at the policy threshold (default 75%), Level 2 at the
+// escalation threshold (default 100%), and Level 3 50 percentage points later
+// (default 150%). Maximum escalation level implemented here is 3.
 const { pool, withTransaction } = require('../config/db');
 const slaService = require('./slaService');
 const audit = require('../models/auditModel');
 
+// Environment variable is in milliseconds; default is 60 seconds, minimum 15 seconds.
 const INTERVAL_MS = Math.max(15000, Number(process.env.SLA_WORKER_INTERVAL_MS) || 60000);
 let timer = null;
 let running = false;
@@ -40,7 +42,7 @@ async function checkOpenTickets() {
           'SELECT * FROM Tickets WHERE ticket_id = ? FOR UPDATE', [ticket.ticket_id]
         );
         const current = lockedRows[0];
-        if (!current || !['Open', 'In Progress', 'Pending'].includes(current.status)) return;
+        if (!current || !['Open', 'In Progress', 'Pending'].includes(current.status) || current.resolved_at) return;
 
         if (shouldWarn && !current.sla_warning_sent) {
           await conn.query('UPDATE Tickets SET sla_warning_sent = TRUE, updated_at = UTC_TIMESTAMP() WHERE ticket_id = ?', [ticket.ticket_id]);
