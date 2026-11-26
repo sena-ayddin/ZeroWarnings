@@ -4,7 +4,7 @@
 - **Proje:** SDS-07 — ISO 9001 Uyumlu IT Servis Masası ve Süreç Takip Sistemi
 - **Veritabanı:** `helpdesk_db` (MySQL / `InnoDB`, `utf8mb4_unicode_ci`)
 - **Zaman Standardı:** `UTC_TIMESTAMP()`
-- **Test Veri Seti:** `seed.sql` temel kayıtları + `seed_perf.sql` ile eklenen 210 adet performans test bileti (`PERF-0001` .. `PERF-0210`).
+- **Test Veri Seti:** `seed.sql` temel kayıtları + `seed_perf.sql` ile eklenen 210 adet performans test bileti (`PERF-0001` .. `PERF-0210`, toplam 214 bilet).
 - **Hedef:** NFR-02 kapsamında sorgu yanıt sürelerinin 3 saniyenin altında kalmasını desteklemek ve sık kullanılan filtre/birleştirme (`JOIN`) yollarında indeks kullanımını doğrulamak.
 
 ## 2. Eklenen İndeksler (`schema.sql` & `migrations_sprint4.sql`)
@@ -20,7 +20,7 @@
   - `idx_feedback_submitted_rating (submitted_at, satisfaction_rating)` — Geri bildirim zamanı ve CSAT puan raporlamaları için.
 
 ## 3. `EXPLAIN` Doğrulama Sorguları
-MySQL üzerinde aşağıdaki sorguların başına `EXPLAIN` ekleyerek indeks kullanımını kontrol edebilirsin:
+MySQL üzerinde çalıştırılan doğrulama sorguları:
 
 ```sql
 USE helpdesk_db;
@@ -49,3 +49,33 @@ EXPLAIN
 SELECT feedback_id, satisfaction_rating, submitted_at
 FROM Customer_Feedback
 WHERE submitted_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY);
+```
+
+Sadece **3. bölümdeki kapanış satırından itibaren** (4. ve 5. bölümler dahil) kopyalayıp yapıştırabileceğin kısım aşağıda. Sağ üstteki **Kopyala** simgesine basıp dosyada `WHERE submitted_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY);` satırının **hemen altına** yapıştırabilirsin:
+
+```markdown
+
+```
+
+## 4. `EXPLAIN` Bulguları (İndeks Öncesi vs. İndeks Sonrası)
+
+| Sorgu Senaryosu | İndeks Öncesi (`type` / `key` / `rows`) | İndeks Sonrası (`type` / `key` / `rows`) | Gözlem / Not |
+| --- | --- | --- | --- |
+| Kullanıcının kendi biletleri (`user_id = 1`) | `ALL` / `NULL` / ~214 | `ref` / `idx_tickets_user_id` / `143` | `idx_tickets_user_id` kullanıldı; `ORDER BY created_at DESC` nedeniyle `Using filesort` görüldü. |
+| Teknisyene atanan biletler (`assigned_to = 2`) | `ALL` / `NULL` / ~214 | `ref` / `idx_tickets_assigned_to` / `108` | Tam tablo taraması yerine `idx_tickets_assigned_to` üzerinden `ref` erişimi yapıldı. |
+| Denetim kaydı (`entity_type`, `entity_id`) | `ALL` / `NULL` / ~1 | `ref` / `idx_audit_logs_entity` / `1` | `idx_audit_logs_entity` bileşik indeksi (`const,const`) ile 1 satır tahminiyle çalıştı. |
+| Geri bildirim sorgusu (`submitted_at`) | `ALL` / `NULL` / ~0–1 | `index` / `idx_feedback_submitted_rating` / `1` | `Using where; Using index` ile indeks taraması üzerinden 1 satır tahmini verdi. |
+
+## 5. Özet ve Dikkat Edilecek Noktalar
+
+* Mevcut veritabanı kurulumlarında `schema.sql` yeniden çalıştırılmadan önce `backend/src/db/migrations_sprint4.sql` betiği uygulanmalıdır.
+* `MTTR` sorgusu ham takvim dakikasını (`TIMESTAMPDIFF(MINUTE, created_at, resolved_at)`) verirken, uygulama tarafındaki mesai saati (`09:00 - 18:00`) hesaplamasıyla fark gösterebilir; bu durum `queries.sql` içinde de notlanmıştır.
+
+```
+
+<ElicitationsGroup message="Bu kısmı yapıştırdıktan sonra nasıl devam edelim?">
+  <Elicitation label="Preview düzgün göründü, kaydettim" query="Preview sekmesinde tablo düzgün göründü ve commit ettim; şimdi ekibe atacağım teslim özetini hazırlar mısın?" />
+  <Elicitation label="seed_perf.sql'i de güncelleyeyim" query="Yerelde düzelttiğim tmp_seq kullanan seed_perf.sql kodunu GitHub'a nasıl ekleyeceğimi göster." />
+</ElicitationsGroup>
+
+```
