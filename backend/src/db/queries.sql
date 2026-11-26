@@ -39,3 +39,38 @@ INSERT INTO Audit_Logs (
     user_id, entity_type, entity_id, action, old_value, new_value
 )
 VALUES (?, ?, ?, ?, ?, ?);
+
+-- 5. Change Requests Listeleme (Tickets ve Users ile JOIN)
+-- Çalışan kendi kayıtlarını filtrelemek için WHERE t.user_id = ? koşulu eklenebilir;
+-- Technician ve Administrator tüm kayıtları görebilir.
+SELECT
+    cr.change_id,
+    t.ticket_id,
+    t.ticket_number,
+    t.title AS ticket_title,
+    t.status AS ticket_status,
+    t.priority,
+    t.user_id,
+    cr.requested_by,
+    u.full_name AS requester_name,
+    cr.change_title,
+    cr.description,
+    cr.reason,
+    cr.impact_level,
+    cr.risk_level,
+    cr.status AS change_status,
+    cr.planned_date,
+    t.created_at
+FROM Change_Requests cr
+INNER JOIN Tickets t
+    ON cr.ticket_id = t.ticket_id
+LEFT JOIN Users u
+    ON cr.requested_by = u.user_id
+ORDER BY t.created_at DESC;
+
+-- 6. Change Request Durum Güncelleme (Şablon Sorgu - ? Parametreli)
+-- NOT: Bu sorgu '?' parametre yer tutucuları içerdiği için doğrudan çalıştırılamayan bir şablondur
+-- (backend uygulaması üzerinden değerlerle çalıştırılır; her değişiklik Audit_Logs tablosuna da işlenmelidir).
+UPDATE Change_Requests
+SET status = ?
+WHERE change_id = ?;
