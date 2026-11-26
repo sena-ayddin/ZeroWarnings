@@ -55,7 +55,10 @@ CREATE TABLE IF NOT EXISTS Tickets (
     FOREIGN KEY (assigned_to) REFERENCES Users(user_id) ON DELETE SET NULL,
     FOREIGN KEY (sla_policy_id) REFERENCES SLA_Policies(sla_policy_id) ON DELETE SET NULL,
     INDEX idx_status (status),
-    INDEX idx_priority (priority)
+    INDEX idx_priority (priority),
+    INDEX idx_tickets_user_id (user_id),
+    INDEX idx_tickets_assigned_to (assigned_to),
+    INDEX idx_tickets_created_at (created_at)
 ) ENGINE=InnoDB;
 
 -- 4. Change_Requests Tablosu (SDS-07 Bölüm 3.5)
@@ -91,7 +94,8 @@ CREATE TABLE IF NOT EXISTS Audit_Logs (
     new_value TEXT NULL,
     action_timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE SET NULL,
-    INDEX idx_timestamp (action_timestamp)
+    INDEX idx_timestamp (action_timestamp),
+    INDEX idx_audit_logs_entity (entity_type, entity_id)
 ) ENGINE=InnoDB;
 
 -- 6. Customer_Feedback Tablosu (SDS-07 Bölüm 3.6)
@@ -103,5 +107,6 @@ CREATE TABLE IF NOT EXISTS Customer_Feedback (
     comments TEXT NULL,
     submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ticket_id) REFERENCES Tickets(ticket_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    INDEX idx_feedback_submitted_rating (submitted_at, satisfaction_rating)
 ) ENGINE=InnoDB;
