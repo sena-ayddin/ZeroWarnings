@@ -32,6 +32,10 @@ npm run test:smoke          # (ayrı terminalde) uçtan uca duman testi
 | GET | /api/tickets/:id | Tüm roller | Detay (`INC-1024` veya sayısal `ticket_id`) |
 | PATCH | /api/tickets/:id/status | Technician, Administrator | Durum güncelleme / teknisyen atama (Audit_Logs'a yazılır) |
 | POST | /api/tickets/:id/feedback | Bilet sahibi | CSAT puanı (1-5) ve yorum |
+| POST | /api/change-requests | Tüm roller | Değişiklik talebi açar (CHG-xxxx bileti ile birlikte) |
+| GET | /api/change-requests | Tüm roller | Talepleri listeler (Employee: sadece kendi) |
+| GET | /api/change-requests/:id | Tüm roller | Talep detayı (`CHG-0872` veya sayısal `change_id`) |
+| PATCH | /api/change-requests/:id/status | Technician, Administrator | Onay / ret / uygulama (Audit_Logs'a yazılır) |
 | GET | /api/kpi | Administrator | Açık/çözülen sayısı, SLA uyum %, MTTR, CSAT ortalaması |
 | GET | /api/health | Herkes | Sunucu ve veritabanı durumu |
 
@@ -60,6 +64,15 @@ Yanıtlardaki bilet nesnesi `ticket_number`, `title`, `request_type`, `priority`
 { "satisfaction_rating": 5, "comments": "Problem hızlı çözüldü." }
 ```
 Sadece bilet sahibi, sadece `Resolved` veya `Closed` bilet için ve bilet başına bir kez gönderebilir (aksi halde 403 / 409). Puan 1-5 tam sayı olmalıdır (400). Geri bildirim ve audit kaydı tek transaction'dadır.
+
+### Değişiklik Talebi (Change Request)
+```json
+{ "title": "VPN erişimi", "description": "...", "reason": "Evden çalışma", "impact_level": "Low",
+  "risk_level": "Low", "planned_date": "2026-12-20", "category": "Access", "priority": "Medium" }
+```
+`impact_level` / `risk_level`: Low, Medium, High. `category` ve `priority` isteğe bağlıdır (varsayılan Other / Medium).
+Durum akışı: **Pending → Approved | Rejected** (sadece Administrator), **Approved → Implemented | Failed** (Technician veya Administrator). Geçersiz geçiş 409, yetkisiz rol 403 döner.
+Bağlı CHG biletinin durumu otomatik güncellenir: Approved → In Progress, Implemented → Resolved, Rejected / Failed → Closed. Talep ve bilet güncellemesi ile audit kayıtları tek transaction'dadır.
 
 ### GET /api/kpi
 ```json

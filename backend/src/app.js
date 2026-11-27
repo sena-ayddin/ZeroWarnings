@@ -7,6 +7,7 @@ const { testConnection } = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const ticketRoutes = require('./routes/ticketRoutes');
 const kpiRoutes = require('./routes/kpiRoutes');
+const changeRequestRoutes = require('./routes/changeRequestRoutes');
 const { notFound, errorHandler } = require('./middlewares/errorHandler');
 
 if (!process.env.JWT_SECRET) {
@@ -34,6 +35,7 @@ app.get('/api/health', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/kpi', kpiRoutes);
+app.use('/api/change-requests', changeRequestRoutes);
 // Gülçin'in CSAT ve otomatik SLA izleme modülleri
 require('./services/slaWorker').start();
 
