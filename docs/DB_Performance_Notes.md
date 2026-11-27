@@ -42,7 +42,7 @@ WHERE assigned_to = 2;
 EXPLAIN
 SELECT log_id, action, old_value, new_value, action_timestamp
 FROM Audit_Logs
-WHERE entity_type = 'ChangeRequest' AND entity_id = 1;
+WHERE entity_type = 'Change_Request' AND entity_id = 1;
 
 -- 4. Geri bildirim puan ve tarih analizi (idx_feedback_submitted_rating)
 EXPLAIN
@@ -51,31 +51,20 @@ FROM Customer_Feedback
 WHERE submitted_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY);
 ```
 
-Sadece **3. bölümdeki kapanış satırından itibaren** (4. ve 5. bölümler dahil) kopyalayıp yapıştırabileceğin kısım aşağıda. Sağ üstteki **Kopyala** simgesine basıp dosyada `WHERE submitted_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY);` satırının **hemen altına** yapıştırabilirsin:
-
-```markdown
-
-```
-
 ## 4. `EXPLAIN` Bulguları (İndeks Öncesi vs. İndeks Sonrası)
 
 | Sorgu Senaryosu | İndeks Öncesi (`type` / `key` / `rows`) | İndeks Sonrası (`type` / `key` / `rows`) | Gözlem / Not |
 | --- | --- | --- | --- |
 | Kullanıcının kendi biletleri (`user_id = 1`) | `ALL` / `NULL` / ~214 | `ref` / `idx_tickets_user_id` / `143` | `idx_tickets_user_id` kullanıldı; `ORDER BY created_at DESC` nedeniyle `Using filesort` görüldü. |
-| Teknisyene atanan biletler (`assigned_to = 2`) | `ALL` / `NULL` / ~214 | `ref` / `idx_tickets_assigned_to` / `108` | Tam tablo taraması yerine `idx_tickets_assigned_to` üzerinden `ref` erişimi yapıldı. |
+| Teknisyene atanan biletler (`assigned_to = 2`) | `ALL` / `NULL` / ~214 | `ref` / `idx_tickets_assigned_to` / `108` | Tam tablo taraması yerine açık tanımlı `idx_tickets_assigned_to` üzerinden `ref` erişimi yapıldı. |
 | Denetim kaydı (`entity_type`, `entity_id`) | `ALL` / `NULL` / ~1 | `ref` / `idx_audit_logs_entity` / `1` | `idx_audit_logs_entity` bileşik indeksi (`const,const`) ile 1 satır tahminiyle çalıştı. |
 | Geri bildirim sorgusu (`submitted_at`) | `ALL` / `NULL` / ~0–1 | `index` / `idx_feedback_submitted_rating` / `1` | `Using where; Using index` ile indeks taraması üzerinden 1 satır tahmini verdi. |
 
+> **Ölçüm Notu:** MySQL (`InnoDB`), yabancı anahtar (`FOREIGN KEY`) tanımlı `user_id` ve `assigned_to` sütunları için varsayılan olarak örtük (otomatik) indeks oluşturur. İndeks öncesi ölçümlerde `ALL` görülmesi bu sütunlarda hiç indeks olmamasından değil; test veri setindeki eşleşen satır oranının yüksek olması (sorgu seçiciliği) nedeniyle MySQL optimizer'ının tam tablo taraması (`ALL`) seçmesinden kaynaklanmaktadır. Eklenen açık adlandırılmış (`idx_tickets_*`) indekslerle birlikte erişim planı doğrulanmıştır.
+
 ## 5. Özet ve Dikkat Edilecek Noktalar
 
-* Mevcut veritabanı kurulumlarında `schema.sql` yeniden çalıştırılmadan önce `backend/src/db/migrations_sprint4.sql` betiği uygulanmalıdır.
-* `MTTR` sorgusu ham takvim dakikasını (`TIMESTAMPDIFF(MINUTE, created_at, resolved_at)`) verirken, uygulama tarafındaki mesai saati (`09:00 - 18:00`) hesaplamasıyla fark gösterebilir; bu durum `queries.sql` içinde de notlanmıştır.
-
-```
-
-<ElicitationsGroup message="Bu kısmı yapıştırdıktan sonra nasıl devam edelim?">
-  <Elicitation label="Preview düzgün göründü, kaydettim" query="Preview sekmesinde tablo düzgün göründü ve commit ettim; şimdi ekibe atacağım teslim özetini hazırlar mısın?" />
-  <Elicitation label="seed_perf.sql'i de güncelleyeyim" query="Yerelde düzelttiğim tmp_seq kullanan seed_perf.sql kodunu GitHub'a nasıl ekleyeceğimi göster." />
-</ElicitationsGroup>
-
-```
+- **Migration Kullanımı:** Mevcut (eski şema ile kurulmuş) veritabanlarında `schema.sql` dosyasını yeniden çalıştırmak yerine yalnızca `backend/src/db/migrations_sprint4.sql` betiği uygulanmalıdır.
+- **Yeni Kurulum Uyarısı:** Güncel `schema.sql` ile sıfırdan kurulmuş bir veritabanında `migrations_sprint4.sql` **çalıştırılmamalıdır**. MySQL'de `CREATE INDEX IF NOT EXISTS` desteği bulunmadığı için indeksler zaten mevcutsa `Duplicate key name` hatası alınır.
+- **Performans Test Verisi:** `seed_perf.sql` dosyası yalnızca performans/yük testi yapılan test veritabanlarında çalıştırılmalıdır; demo veya geliştirme ortamında dashboard ve KPI sayılarını bozmaması için test sonrası `PERF-%` kayıtları temizlenmelidir.
+- **MTTR Hesaplama Farkı:** `MTTR` sorgusu ham takvim dakikasını (`TIMESTAMPDIFF(MINUTE, created_at, resolved_at)`) verirken, uygulama tarafındaki mesai saati (`09:00 - 18:00`) hesaplamasıyla fark gösterebilir; bu durum `queries.sql` içinde de notlanmıştır.
