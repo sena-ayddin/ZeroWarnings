@@ -1,3 +1,5 @@
+[KPI_CSAT_Formulas.md](https://github.com/user-attachments/files/35524658/KPI_CSAT_Formulas.md)
+
 # SDS-07 – KPI & CSAT Formulas
 
 **Responsible:** Gülçin Hacıimam – Quality Assurance & Process Specialist
@@ -31,3 +33,15 @@ Request body:
 ```
 
 The feedback insert and its `Audit_Logs` record are committed in one transaction.
+
+## 5. FCR (First Contact Resolution)
+
+FCR measures the proportion of resolved tickets that were resolved at the first contact without escalation. For this project, the agreed proxy is `escalation_level = 1` at resolution.
+
+`FCR (%) = (resolved tickets with escalation_level = 1 / all resolved tickets) * 100`
+
+Use tickets with status `Resolved` or `Closed` in both numerator and denominator. If there are no resolved tickets, report FCR as `N/A` (not 0%). This proxy should be interpreted consistently and documented when reporting.
+
+## 6. CSAT Results API
+
+`GET /api/feedback` (Administrator only; JWT required) returns feedback rows with `ticket_number`, `satisfaction_rating`, `comments`, and `created_at`.
