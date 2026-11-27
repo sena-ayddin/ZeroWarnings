@@ -43,3 +43,33 @@ async function submitFeedbackAPI(feedbackData) {
   }
   return await response.json();
 }
+// Append these helpers to the existing frontend/js/api.js (do not replace the file).
+async function getFeedbackResultsAPI() {
+  const token = localStorage.getItem("token");
+  const response = await fetch(`${API_BASE_URL}/feedback`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    }
+  });
+  if (!response.ok) {
+    throw new Error("CSAT sonuçları alınamadı.");
+  }
+  return await response.json();
+}
+
+async function getSlaAlertsAPI() {
+  const token = localStorage.getItem("token");
+  const response = await fetch(`${API_BASE_URL}/sla/alerts`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    }
+  });
+  if (!response.ok) {
+    throw new Error("SLA uyarıları alınamadı.");
+  }
+  return await response.json();
+}
