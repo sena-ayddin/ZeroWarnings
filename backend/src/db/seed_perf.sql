@@ -1,3 +1,9 @@
+-- =============================================================================
+-- UYARI: Bu betiği SADECE performans/yük testi yapılan TEST veritabanında çalıştırın.
+-- Demo veya geliştirme ortamında çalıştırılması dashboard/KPI sayılarını bozar ve
+-- SLA worker'ın açık PERF kayıtlarını eskale ederek çok sayıda audit kaydı üretmesine yol açar.
+-- =============================================================================
+
 USE helpdesk_db;
 
 DROP TEMPORARY TABLE IF EXISTS tmp_seq;
@@ -47,7 +53,7 @@ SELECT
         WHEN 0 THEN 'Network'
         WHEN 1 THEN 'Hardware'
         WHEN 2 THEN 'Software'
-        ELSE 'Database'
+        ELSE 'Other'
     END,
     CASE ((n - 1) % 4) + 1
         WHEN 1 THEN 'Low'
@@ -69,13 +75,16 @@ SELECT
         WHEN n % 5 = 0 THEN 2
         ELSE 1
     END,
-    DATE_SUB(UTC_TIMESTAMP(), INTERVAL (n * 15) MINUTE),
-    DATE_SUB(UTC_TIMESTAMP(), INTERVAL ((n * 15) - 60) MINUTE),
-    DATE_SUB(UTC_TIMESTAMP(), INTERVAL ((n * 15) - 240) MINUTE),
+    DATE_SUB(UTC_TIMESTAMP(), INTERVAL ((n * 15) + 90) MINUTE),
+    DATE_SUB(UTC_TIMESTAMP(), INTERVAL ((n * 15) + 30) MINUTE),
+    DATE_SUB(UTC_TIMESTAMP(), INTERVAL ((n * 15) - 150) MINUTE),
     CASE
-        WHEN n <= 120 OR n > 185 THEN DATE_SUB(UTC_TIMESTAMP(), INTERVAL ((n * 15) - 90) MINUTE)
+        WHEN n <= 120 OR n > 185 THEN DATE_SUB(UTC_TIMESTAMP(), INTERVAL (n * 15) MINUTE)
         ELSE NULL
     END
 FROM tmp_seq;
 
 DROP TEMPORARY TABLE IF EXISTS tmp_seq;
+
+-- Test sonrası sentetik performans kayıtlarını temizlemek için:
+-- DELETE FROM Tickets WHERE ticket_number LIKE 'PERF-%';
