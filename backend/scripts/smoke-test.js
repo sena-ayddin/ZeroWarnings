@@ -62,10 +62,44 @@ const login = (email, password) => call('POST', '/api/auth/login', { body: { ema
   check('Bilet Closed yapılır', (await patch(tech.data.token, { status: 'Closed' })).status, 200);
   check('Kapalı bilet güncellenemez', (await patch(tech.data.token, { status: 'In Progress' })).status, 409);
 
+  // --- CSAT (ISO 9001 Madde 9.1.2) ---
+  const feedback = (token, body) => call('POST', `/api/tickets/${id}/feedback`, { token, body });
+  check('Geçersiz puan reddedilir', (await feedback(emp.data.token, { satisfaction_rating: 6 })).status, 400);
+  check('Bilet sahibi olmayan geri bildirim veremez', (await feedback(tech.data.token, { satisfaction_rating: 5 })).status, 403);
+  check('Bilet sahibi geri bildirim verir', (await feedback(emp.data.token, { satisfaction_rating: 5, comments: 'Hızlı çözüldü' })).status, 201);
+  check('Aynı bilete ikinci geri bildirim reddedilir', (await feedback(emp.data.token, { satisfaction_rating: 4 })).status, 409);
+
+  // --- Change Request (FR-04, ISO 9001 Madde 8.5.6) ---
+  const crBody = { title: 'VPN erişimi talebi', description: 'Uzaktan çalışma için VPN erişimi', reason: 'Evden çalışma onayı', impact_level: 'Low', risk_level: 'Low', category: 'Access', priority: 'Medium' };
+  const crPatch = (no, token, status) => call('PATCH', `/api/change-requests/${no}/status`, { token, body: { status } });
+  check('Geçersiz değişiklik talebi', (await call('POST', '/api/change-requests', { token: emp.data.token, body: { title: 'x' } })).status, 400);
+  const cr = await call('POST', '/api/change-requests', { token: emp.data.token, body: crBody });
+  check('Değişiklik talebi açma', cr.status, 201);
+  const crNo = cr.data.ticket_number;
+  console.log(`   -> ${crNo}, durum: ${cr.data.change_request && cr.data.change_request.status}`);
+  check('CHG numarası üretildi', String(crNo).startsWith('CHG-'), true);
+  check('Başlangıç durumu Pending', cr.data.change_request.status, 'Pending');
+  check('Çalışan kendi taleplerini listeler', (await call('GET', '/api/change-requests', { token: emp.data.token })).data.count >= 1, true);
+  check('Talep detayı', (await call('GET', `/api/change-requests/${crNo}`, { token: emp.data.token })).status, 200);
+  check('Başka çalışan talebi göremez', (await call('GET', `/api/change-requests/${crNo}`, { token: other.data.token })).status, 403);
+  check('Çalışan talebi onaylayamaz', (await crPatch(crNo, emp.data.token, 'Approved')).status, 403);
+  check('Technician talebi onaylayamaz', (await crPatch(crNo, tech.data.token, 'Approved')).status, 403);
+  check('Onaylanmadan uygulanamaz', (await crPatch(crNo, admin.data.token, 'Implemented')).status, 409);
+  check('Administrator talebi onaylar', (await crPatch(crNo, admin.data.token, 'Approved')).status, 200);
+  check('Bağlı bilet In Progress oldu', (await call('GET', `/api/tickets/${crNo}`, { token: tech.data.token })).data.ticket.status, 'In Progress');
+  check('Technician talebi uygular', (await crPatch(crNo, tech.data.token, 'Implemented')).status, 200);
+  check('Bağlı bilet Resolved oldu', (await call('GET', `/api/tickets/${crNo}`, { token: tech.data.token })).data.ticket.status, 'Resolved');
+  check('Uygulanmış talep tekrar değişmez', (await crPatch(crNo, admin.data.token, 'Failed')).status, 409);
+  const cr2 = await call('POST', '/api/change-requests', { token: emp.data.token, body: crBody });
+  check('İkinci değişiklik talebi açma', cr2.status, 201);
+  check('Administrator talebi reddeder', (await crPatch(cr2.data.ticket_number, admin.data.token, 'Rejected')).status, 200);
+  check('Reddedilen talebin bileti Closed', (await call('GET', `/api/tickets/${cr2.data.ticket_number}`, { token: tech.data.token })).data.ticket.status, 'Closed');
+
   // --- KPI (FR-10) ---
   const kpi = await call('GET', '/api/kpi', { token: admin.data.token });
   check('Admin KPI raporu alır', kpi.status, 200);
   check('Çözülen bilet sayısı >= 1', kpi.data.kpi.resolved_tickets >= 1, true);
+  check('KPI CSAT ortalamasını içerir', kpi.data.kpi.total_feedback >= 1 && kpi.data.kpi.average_csat !== null, true);
   console.log('   -> KPI:', JSON.stringify(kpi.data.kpi));
   check('Employee KPI göremez', (await call('GET', '/api/kpi', { token: emp.data.token })).status, 403);
   check('Technician KPI göremez', (await call('GET', '/api/kpi', { token: tech.data.token })).status, 403);

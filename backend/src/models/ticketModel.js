@@ -37,7 +37,8 @@ const nextNumber = async (conn, requestType) => {
 };
 
 // Bileti ve audit kaydını tek transaction'da oluşturur; aynı anda aynı numara üretilirse yeniden dener.
-exports.createWithAudit = async (data) => {
+// afterCreate(conn, ticket): aynı transaction içinde ek kayıt (örn. Change_Requests) yazmak için, isteğe bağlı.
+exports.createWithAudit = async (data, afterCreate) => {
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
       return await withTransaction(async (conn) => {
@@ -47,7 +48,9 @@ exports.createWithAudit = async (data) => {
           user_id: data.user_id, entity_type: 'Ticket', entity_id: result.insertId, action: 'TICKET_CREATED',
           new_value: { ticket_number, priority: data.priority, category: data.category, request_type: data.request_type }
         });
-        return exports.findByRef(result.insertId, conn);
+        const ticket = await exports.findByRef(result.insertId, conn);
+        if (afterCreate) await afterCreate(conn, ticket);
+        return ticket;
       });
     } catch (err) {
       if (err.code === 'ER_DUP_ENTRY' && attempt < 4) continue;
