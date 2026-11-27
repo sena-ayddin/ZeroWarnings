@@ -56,9 +56,9 @@ WHERE resolution_due_at IS NOT NULL
   -- 4. Audit Logs Insertion
 -- NOT: Bu sorgu '?' parametre yer tutucuları içerdiği için doğrudan çalıştırılamayan bir şablondur (backend uygulaması üzerinden değerlerle çalıştırılır).
 INSERT INTO Audit_Logs (
-    user_id, entity_type, entity_id, action, old_value, new_value
+    user_id, entity_type, entity_id, action, old_value, new_value, action_timestamp
 )
-VALUES (?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, UTC_TIMESTAMP());
 
 -- 5. Change Requests Listeleme (Tickets ve Users ile JOIN)
 -- Çalışan kendi kayıtlarını filtrelemek için WHERE t.user_id = ? koşulu eklenebilir;
