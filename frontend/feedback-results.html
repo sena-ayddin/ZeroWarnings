@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSAT Sonuçları | ZeroWarnings</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f6fb;color:#172033;font:15px system-ui,-apple-system,"Segoe UI",sans-serif}.wrap{max-width:1100px;margin:40px auto;padding:0 20px}.head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}h1{margin:0;font-size:27px}.sub{color:#64748b;margin:8px 0 24px}.panel{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:20px;overflow:auto}.summary{margin-bottom:14px;color:#475569}.table{width:100%;border-collapse:collapse;min-width:650px}.table th,.table td{text-align:left;padding:13px;border-bottom:1px solid #e8edf4}.table th{background:#f8fafc;color:#475569}.rating{font-weight:700;color:#2563eb}.error{color:#b91c1c}.btn{border:1px solid #cbd5e1;border-radius:7px;background:white;padding:8px 12px;cursor:pointer}
+</style></head>
+<body><main class="wrap"><header class="head"><h1>CSAT Sonuçları</h1><button class="btn" id="refresh">Yenile</button></header><p class="sub">Müşteri memnuniyeti geri bildirimleri · Administrator</p><section class="panel"><div id="summary" class="summary">Sonuçlar yükleniyor…</div><div id="message"></div><table class="table"><thead><tr><th>Bilet No</th><th>Puan</th><th>Yorum</th><th>Tarih</th></tr></thead><tbody id="results"></tbody></table></section></main>
+<script src="js/api.js"></script><script>
+const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function loadResults(){const message=document.getElementById('message');message.textContent='';document.getElementById('results').innerHTML='';try{const data=await getFeedbackResultsAPI();const rows=data.feedback||[];document.getElementById('summary').textContent=`Toplam geri bildirim: ${rows.length}`;if(!rows.length){document.getElementById('results').innerHTML='<tr><td colspan="4">Henüz geri bildirim yok.</td></tr>';return;}document.getElementById('results').innerHTML=rows.map(r=>`<tr><td>${escapeHTML(r.ticket_number)}</td><td class="rating">${escapeHTML(r.satisfaction_rating)} / 5</td><td>${escapeHTML(r.comments||'—')}</td><td>${escapeHTML(r.created_at?new Date(r.created_at).toLocaleString('tr-TR'):'—')}</td></tr>`).join('');}catch(e){document.getElementById('summary').textContent='';message.className='error';message.textContent=e.message+' (Giriş yapıp Administrator hesabıyla erişin.)';}}
+document.getElementById('refresh').addEventListener('click',loadResults);loadResults();
+</script></body></html>
