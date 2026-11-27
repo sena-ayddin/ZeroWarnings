@@ -1,5 +1,4 @@
-[SLA_Calculation_Logic.md](https://github.com/user-attachments/files/35421933/SLA_Calculation_Logic.md)
-
+[SLA_Calculation_Logic.md](https://github.com/user-attachments/files/35524708/SLA_Calculation_Logic.md)
 # SDS-07 – SLA Calculation Logic
 
 **Project:** IT Service Desk and Process Tracking System  
@@ -176,7 +175,11 @@ Provides measurable SLA performance information, including elapsed time, remaini
 
 Supports the documentation and traceability of SLA calculation rules and process information.
 
-## 10. Limitations and Future Improvements
+## 10. SLA Alerts API (Gülçin Hacıimam)
+
+`GET /api/sla/alerts` requires a valid JWT and is available to `Technician` and `Administrator` roles. It lists open, in-progress, and pending tickets whose calculated SLA status is `WARNING` or `ESCALATED`. Each item includes ticket number, priority, SLA status, remaining business minutes, escalation level, resolution deadline, and elapsed percentage. The endpoint uses the same `slaService` business-hours calculation as the SLA worker and KPI logic.
+
+## 11. Limitations and Future Improvements
 
 The current implementation uses initial example SLA values.
 
@@ -189,7 +192,7 @@ Future improvements may include:
 - Integrating SLA warnings with the technician dashboard.
 - Supporting different response and resolution time targets.
 
-## 11. Conclusion
+## 12. Conclusion
 
 The SLA calculation service provides a structured approach to monitoring IT support requests.
 
