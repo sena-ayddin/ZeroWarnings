@@ -32,3 +32,15 @@ exports.getSummary = async () => {
     average_csat: rows[0].average_csat === null ? null : Number(rows[0].average_csat)
   };
 };
+
+// Administrator CSAT list: rating, comment and public ticket reference.
+exports.listResults = async () => {
+  const [rows] = await pool.query(
+    `SELECT cf.feedback_id, cf.satisfaction_rating, cf.comments, cf.created_at,
+            t.ticket_number
+       FROM Customer_Feedback cf
+       INNER JOIN Tickets t ON t.ticket_id = cf.ticket_id
+      ORDER BY cf.created_at DESC, cf.feedback_id DESC`
+  );
+  return rows;
+};
