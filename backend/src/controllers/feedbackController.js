@@ -50,3 +50,11 @@ exports.createFeedback = async (req, res, next) => {
     res.status(201).json({ success: true, feedback: result });
   } catch (err) { next(err); }
 };
+
+// GET /api/feedback — administrator CSAT results (ISO 9001:2015 9.1.2)
+exports.listFeedback = async (req, res, next) => {
+  try {
+    const feedback = await feedbackModel.listResults();
+    res.json({ success: true, count: feedback.length, feedback });
+  } catch (err) { next(err); }
+};
