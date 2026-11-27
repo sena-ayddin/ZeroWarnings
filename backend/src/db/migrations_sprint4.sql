@@ -1,3 +1,6 @@
+-- UYARI: Yalnızca eski schema.sql ile kurulmuş mevcut veritabanlarında çalıştırın.
+-- Güncel schema.sql ile sıfırdan kurulan veritabanında çalıştırılırsa Duplicate key name hatası verir.
+
 USE helpdesk_db;
 
 -- Tickets indeksleri
